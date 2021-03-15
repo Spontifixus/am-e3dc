@@ -23,7 +23,7 @@ namespace AM.E3DC.RSCP.Data.Tests
         {
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
-            this.subject.Length.Should().Be(18);
+            this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
@@ -39,7 +39,7 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(protocolVersion);
-            this.subject.Length.Should().Be(18);
+            this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
@@ -59,7 +59,7 @@ namespace AM.E3DC.RSCP.Data.Tests
                 .WithMessage("Invalid protocol version! The protocol version must be between 1 and 15.");
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
-            this.subject.Length.Should().Be(18);
+            this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
@@ -70,14 +70,14 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             this.subject.HasChecksum.Should().BeFalse();
             this.subject.ProtocolVersion.Should().Be(1);
-            this.subject.Length.Should().Be(18);
+            this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(this.now);
 
             this.subject.HasChecksum = true;
 
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
-            this.subject.Length.Should().Be(18);
+            this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
@@ -91,14 +91,14 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
-            this.subject.Length.Should().Be(18);
+            this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(timestamp, 0);
         }
 
         [Fact]
         public void CanGetBytes()
         {
-            var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
             // No need to write a fixed CRC into the result here,
             // as we don't want to test the CrC32 algorithm.

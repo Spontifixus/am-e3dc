@@ -1,0 +1,193 @@
+﻿using AM.E3DC.RSCP.Data.Values;
+using FluentAssertions;
+using Xunit;
+
+namespace AM.E3DC.RSCP.Data.Tests
+{
+    public class RscpValueFixture
+    {
+        private const RscpTag Tag = RscpTag.TAG_BAT_CHARGE_CYCLES;
+
+        [Fact]
+        public void CanHandleRscpVoid()
+        {
+            var rscpValue = new RscpVoid(Tag);
+            rscpValue.AssertHeader<RscpVoid>(Tag, RscpDataType.Void, 0);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpVoid>(Tag, RscpDataType.Void, 0);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CanHandleRscpBool(bool value)
+        {
+            var rscpValue = new RscpBool(Tag, value);
+            rscpValue.AssertHeader<RscpBool>(Tag, RscpDataType.Bool, 1);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpBool>(Tag, RscpDataType.Bool, 1);
+            ((RscpBool)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(sbyte.MinValue)]
+        [InlineData(0)]
+        [InlineData(sbyte.MaxValue)]
+        public void CanHandleRscpInt8(sbyte value)
+        {
+            var rscpValue = new RscpInt8(Tag, value);
+            rscpValue.AssertHeader<RscpInt8>(Tag, RscpDataType.Int8, 1);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpInt8>(Tag, RscpDataType.Int8, 1);
+            ((RscpInt8)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(byte.MinValue)]
+        [InlineData(byte.MaxValue)]
+        public void CanHandleRscpUInt8(byte value)
+        {
+            var rscpValue = new RscpUInt8(Tag, value);
+            rscpValue.AssertHeader<RscpUInt8>(Tag, RscpDataType.UInt8, 1);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpUInt8>(Tag, RscpDataType.UInt8, 1);
+            ((RscpUInt8)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(short.MinValue)]
+        [InlineData(0)]
+        [InlineData(short.MaxValue)]
+        public void CanHandleRscpInt16(short value)
+        {
+            var rscpValue = new RscpInt16(Tag, value);
+            rscpValue.AssertHeader<RscpInt16>(Tag, RscpDataType.Int16, 2);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpInt16>(Tag, RscpDataType.Int16, 2);
+            ((RscpInt16)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(ushort.MinValue)]
+        [InlineData(ushort.MaxValue)]
+        public void CanHandleRscpUInt16(ushort value)
+        {
+            var rscpValue = new RscpUInt16(Tag, value);
+            rscpValue.AssertHeader<RscpUInt16>(Tag, RscpDataType.UInt16, 2);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpUInt16>(Tag, RscpDataType.UInt16, 2);
+            ((RscpUInt16)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(int.MinValue)]
+        [InlineData(0)]
+        [InlineData(int.MaxValue)]
+        public void CanHandleRscpInt32(int value)
+        {
+            var rscpValue = new RscpInt32(Tag, value);
+            rscpValue.AssertHeader<RscpInt32>(Tag, RscpDataType.Int32, 4);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpInt32>(Tag, RscpDataType.Int32, 4);
+            ((RscpInt32)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(uint.MinValue)]
+        [InlineData(uint.MaxValue)]
+        public void CanHandleRscpUInt32(uint value)
+        {
+            var rscpValue = new RscpUInt32(Tag, value);
+            rscpValue.AssertHeader<RscpUInt32>(Tag, RscpDataType.UInt32, 4);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpUInt32>(Tag, RscpDataType.UInt32, 4);
+            ((RscpUInt32)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(long.MinValue)]
+        [InlineData(0)]
+        [InlineData(long.MaxValue)]
+        public void CanHandleRscpInt64(long value)
+        {
+            var rscpValue = new RscpInt64(Tag, value);
+            rscpValue.AssertHeader<RscpInt64>(Tag, RscpDataType.Int64, 8);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpInt64>(Tag, RscpDataType.Int64, 8);
+            ((RscpInt64)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(ulong.MinValue)]
+        [InlineData(ulong.MaxValue)]
+        public void CanHandleRscpUInt64(ulong value)
+        {
+            var rscpValue = new RscpUInt64(Tag, value);
+            rscpValue.AssertHeader<RscpUInt64>(Tag, RscpDataType.UInt64, 8);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpUInt64>(Tag, RscpDataType.UInt64, 8);
+            ((RscpUInt64)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(float.MinValue)]
+        [InlineData(0)]
+        [InlineData(float.MaxValue)]
+        public void CanHandleRscpFloat(float value)
+        {
+            var rscpValue = new RscpFloat(Tag, value);
+            rscpValue.AssertHeader<RscpFloat>(Tag, RscpDataType.Float, 4);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpFloat>(Tag, RscpDataType.Float, 4);
+            ((RscpFloat)deserialized).Value.Should().Be(value);
+        }
+
+        [Theory]
+        [InlineData(double.MinValue)]
+        [InlineData(0)]
+        [InlineData(double.MaxValue)]
+        public void CanHandleRscpDouble(double value)
+        {
+            var rscpValue = new RscpDouble(Tag, value);
+            rscpValue.AssertHeader<RscpDouble>(Tag, RscpDataType.Double, 8);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpDouble>(Tag, RscpDataType.Double, 8);
+            ((RscpDouble)deserialized).Value.Should().Be(value);
+        }
+    }
+}
