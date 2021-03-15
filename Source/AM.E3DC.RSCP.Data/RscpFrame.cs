@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Runtime.InteropServices;
 using Force.Crc32;
 
@@ -11,15 +10,14 @@ namespace AM.E3DC.RSCP.Data
     public class RscpFrame
     {
         private static readonly byte[] MagicBytes = { 0xE3, 0xDC };
-
-        private readonly IMemoryOwner<byte> bufferOwner = MemoryPool<byte>.Shared.Rent();
+        private byte protocolVersion;
+        private RscpTime timestamp;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RscpFrame"/> class.
         /// </summary>
         public RscpFrame()
         {
-            this.InitializeMagicBytes();
             this.HasChecksum = true;
             this.ProtocolVersion = 1;
             this.Timestamp = DateTime.Now;
@@ -31,23 +29,10 @@ namespace AM.E3DC.RSCP.Data
         /// <value>The point in time where the frame was created.</value>
         public DateTime Timestamp
         {
-            get
-            {
-                var seconds = MemoryMarshal.Read<long>(this.Memory.Span.Slice(4, 8));
-                var nanoSeconds = MemoryMarshal.Read<int>(this.Memory.Span.Slice(12, 4));
-
-                var ticks = DateTime.UnixEpoch.Ticks + (seconds * TimeSpan.TicksPerSecond) + (nanoSeconds / 100);
-                return new DateTime(ticks);
-            }
-
+            get => this.timestamp.ToDateTime();
             internal set
             {
-                var unixTimestamp = value.Ticks - DateTime.UnixEpoch.Ticks;
-                var seconds = unixTimestamp / TimeSpan.TicksPerSecond;
-                var nanoseconds = (int)(unixTimestamp % TimeSpan.TicksPerSecond) * 100;
-
-                MemoryMarshal.Write(this.Memory.Span.Slice(4, 8), ref seconds);
-                MemoryMarshal.Write(this.Memory.Span.Slice(12, 4), ref nanoseconds);
+                this.timestamp = new RscpTime(value);
             }
         }
 
@@ -59,10 +44,7 @@ namespace AM.E3DC.RSCP.Data
         /// <exception cref="InvalidOperationException">Thrown if a version lower than 1 or higher than 15 is being set.</exception>
         public byte ProtocolVersion
         {
-            get
-            {
-                return (byte)(this.Memory.Span[3] & 0x0F);
-            }
+            get => this.protocolVersion;
 
             internal set
             {
@@ -71,9 +53,7 @@ namespace AM.E3DC.RSCP.Data
                     throw new InvalidOperationException("Invalid protocol version! The protocol version must be between 1 and 15.");
                 }
 
-                // Remove old version and set new one.
-                this.Memory.Span[3] = (byte)(this.Memory.Span[3] & 0xF0);
-                this.Memory.Span[3] = (byte)(this.Memory.Span[3] | value);
+                this.protocolVersion = value;
             }
         }
 
@@ -81,33 +61,13 @@ namespace AM.E3DC.RSCP.Data
         /// Gets or sets a value indicating whether this frame should contain a CRC32 checksum.
         /// </summary>
         /// <value>If set to <c>true</c>, a checksum will be included at the end of the frame.</value>
-        public bool HasChecksum
-        {
-            get
-            {
-                return (byte)(this.Memory.Span[3] & 0x10) == 0x10;
-            }
-
-            set
-            {
-                if (value)
-                {
-                    this.Memory.Span[3] = (byte)(this.Memory.Span[3] | 0x10);
-                }
-                else
-                {
-                    this.Memory.Span[3] = (byte)(this.Memory.Span[3] & 0x0F);
-                }
-            }
-        }
+        public bool HasChecksum { get; set; }
 
         /// <summary>
         /// Gets the total length of this frame.
         /// </summary>
         /// <remarks>The length is calculated without the CRC32 checksum.</remarks>
         public ushort Length => 18;
-
-        private Memory<byte> Memory => this.bufferOwner.Memory;
 
         /// <summary>
         /// Gets the raw bytes representing this frame.
@@ -119,25 +79,38 @@ namespace AM.E3DC.RSCP.Data
         /// </remarks>
         public byte[] GetBytes()
         {
-            // Writing the length here, so we don't need to update this
-            // anytime we're modifying the frame.
-            var length = this.Length;
-            MemoryMarshal.Write(this.Memory.Span.Slice(16, 2), ref length);
-
-            var fullLength = this.HasChecksum ? this.Length + 4 : this.Length;
-            var bytes = this.Memory.Span.Slice(0, fullLength).ToArray();
+            var totalLength = this.Length;
             if (this.HasChecksum)
             {
-                Crc32Algorithm.ComputeAndWriteToEnd(bytes);
+                totalLength += 4;
             }
 
-            return bytes;
-        }
+            var rawDataBytes = new byte[totalLength];
+            rawDataBytes.Initialize();
 
-        private void InitializeMagicBytes()
-        {
-            var span = this.Memory.Slice(0, 2).Span;
-            MagicBytes.AsSpan().CopyTo(span);
+            var rawData = new Span<byte>(rawDataBytes);
+
+            MagicBytes.CopyTo(rawData);
+
+            // According to the E3/DC protocol documentation this should
+            // be rawData[2], but the documentation got that wrong...
+            rawData[3] = (byte)(rawData[3] | this.ProtocolVersion);
+            if (this.HasChecksum)
+            {
+                rawData[3] = (byte)(rawData[3] | 0x10);
+            }
+
+            MemoryMarshal.Write(rawData.Slice(4, 12), ref this.timestamp);
+
+            var length = this.Length;
+            MemoryMarshal.Write(rawData.Slice(16, 2), ref length);
+
+            if (this.HasChecksum)
+            {
+                Crc32Algorithm.ComputeAndWriteToEnd(rawDataBytes);
+            }
+
+            return rawDataBytes;
         }
     }
 }
