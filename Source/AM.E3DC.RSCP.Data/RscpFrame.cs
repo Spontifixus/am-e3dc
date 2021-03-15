@@ -7,8 +7,10 @@ namespace AM.E3DC.RSCP.Data
     /// <summary>
     /// This class represents an RSCP control frame that can be used to communicate with an E3DC power station.
     /// </summary>
-    public class RscpFrame
+    public sealed class RscpFrame
     {
+        private const ushort HeaderLength = 18;
+        private const ushort ChecksumLength = 4;
         private static readonly byte[] MagicBytes = { 0xE3, 0xDC };
         private byte protocolVersion;
         private RscpTime timestamp;
@@ -67,7 +69,7 @@ namespace AM.E3DC.RSCP.Data
         /// Gets the total length of this frame.
         /// </summary>
         /// <remarks>The length is calculated without the CRC32 checksum.</remarks>
-        public ushort Length => 18;
+        public ushort Length => 0;
 
         /// <summary>
         /// Gets the raw bytes representing this frame.
@@ -79,10 +81,10 @@ namespace AM.E3DC.RSCP.Data
         /// </remarks>
         public byte[] GetBytes()
         {
-            var totalLength = this.Length;
+            var totalLength = HeaderLength + this.Length;
             if (this.HasChecksum)
             {
-                totalLength += 4;
+                totalLength += ChecksumLength;
             }
 
             var rawDataBytes = new byte[totalLength];
