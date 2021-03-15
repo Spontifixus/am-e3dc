@@ -9,10 +9,13 @@ namespace AM.E3DC.RSCP.Data.Tests
     public class RscpFrameFixture
     {
         private readonly RscpFrame subject;
+        private readonly DateTime now;
 
         public RscpFrameFixture()
         {
-            this.subject = new RscpFrame();
+            this.now = DateTime.Now;
+
+            this.subject = new RscpFrame { Timestamp = this.now };
         }
 
         [Fact]
@@ -21,7 +24,7 @@ namespace AM.E3DC.RSCP.Data.Tests
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(18);
-            this.subject.Timestamp.Should().BeCloseTo(DateTime.Now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
         [Theory]
@@ -37,7 +40,7 @@ namespace AM.E3DC.RSCP.Data.Tests
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(protocolVersion);
             this.subject.Length.Should().Be(18);
-            this.subject.Timestamp.Should().BeCloseTo(DateTime.Now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
         [Theory]
@@ -46,9 +49,6 @@ namespace AM.E3DC.RSCP.Data.Tests
         [InlineData(255)]
         public void FailsOnInvalidProtocolVersion(byte protocolVersion)
         {
-            var now = DateTime.Now;
-            this.subject.Timestamp = now;
-
             var action = new Action(() =>
                 {
                     this.subject.ProtocolVersion = protocolVersion;
@@ -60,7 +60,7 @@ namespace AM.E3DC.RSCP.Data.Tests
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(18);
-            this.subject.Timestamp.Should().BeCloseTo(now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
         [Fact]
@@ -71,14 +71,14 @@ namespace AM.E3DC.RSCP.Data.Tests
             this.subject.HasChecksum.Should().BeFalse();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(18);
-            this.subject.Timestamp.Should().BeCloseTo(DateTime.Now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now);
 
             this.subject.HasChecksum = true;
 
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(18);
-            this.subject.Timestamp.Should().BeCloseTo(DateTime.Now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now);
         }
 
         [Fact]
