@@ -5,14 +5,14 @@ using Xunit;
 
 namespace AM.E3DC.RSCP.Data.Tests
 {
-    public class RscpTimeFixture
+    public class RscpTimestampFixture
     {
         private readonly DateTime now = DateTime.Now;
 
         [Fact]
         public void CanCreateRscpTime()
         {
-            var subject = new RscpTime(this.now);
+            var subject = new RscpTimestamp(this.now);
 
             subject.ToDateTime()
                 .Should()
@@ -22,7 +22,7 @@ namespace AM.E3DC.RSCP.Data.Tests
         [Fact]
         public void CanSerializeAndDeserialize()
         {
-            var subject = new RscpTime(this.now);
+            var subject = new RscpTimestamp(this.now);
 
             var bytes = new byte[12];
             bytes.Initialize();
@@ -30,7 +30,7 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             MemoryMarshal.Write(span, ref subject);
 
-            var deserialized = MemoryMarshal.Read<RscpTime>(span);
+            var deserialized = MemoryMarshal.Read<RscpTimestamp>(span);
             deserialized.ToDateTime()
                 .Should()
                 .Be(this.now);

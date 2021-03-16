@@ -4,7 +4,7 @@ using System.Text;
 namespace AM.E3DC.RSCP.Data.Values
 {
     /// <summary>
-    /// Value object used to transport messages with a boolean payload.
+    /// Value object used to transport messages with a <see cref="string"/> payload.
     /// </summary>
     public sealed class RscpString : RscpValue<string>
     {
@@ -14,7 +14,7 @@ namespace AM.E3DC.RSCP.Data.Values
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="value">The value of the object.</param>
         public RscpString(RscpTag tag, string value)
-        : base(tag, RscpDataType.String, (ushort)value.Length, value)
+        : base(tag, (ushort)value.Length, value)
         {
         }
 
@@ -24,10 +24,13 @@ namespace AM.E3DC.RSCP.Data.Values
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="data">The span containing the value of this object.</param>
         internal RscpString(RscpTag tag, ReadOnlySpan<byte> data)
-            : base(tag, RscpDataType.String, (ushort)data.Length)
+            : base(tag, (ushort)data.Length)
         {
             this.Value = Encoding.UTF8.GetString(data);
         }
+
+        /// <inheritdoc />
+        public override RscpDataType DataType => RscpDataType.String;
 
         private protected override void OnWrite(Span<byte> destination)
         {

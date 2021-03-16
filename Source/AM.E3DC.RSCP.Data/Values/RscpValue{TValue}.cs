@@ -10,24 +10,22 @@
         /// Initializes a new instance of the <see cref="RscpValue{TValue}"/> class.
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
-        /// <param name="dataType">The data type of the value object.</param>
         /// <param name="length">The length of the value object.</param>
-        protected RscpValue(RscpTag tag, RscpDataType dataType, ushort length)
-            : base(tag, dataType, length)
+        /// <param name="value">The value of this object.</param>
+        protected RscpValue(RscpTag tag, ushort length, TValue value)
+        : this(tag, length)
         {
+            this.Value = value;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RscpValue{TValue}"/> class.
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
-        /// <param name="dataType">The data type of the value object.</param>
         /// <param name="length">The length of the value object.</param>
-        /// <param name="value">The value of this object.</param>
-        protected RscpValue(RscpTag tag, RscpDataType dataType, ushort length, TValue value)
-        : this(tag, dataType, length)
+        protected RscpValue(RscpTag tag, ushort length)
+            : base(tag, length)
         {
-            this.Value = value;
         }
 
         /// <summary>

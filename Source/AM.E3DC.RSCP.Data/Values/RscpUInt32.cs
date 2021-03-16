@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace AM.E3DC.RSCP.Data.Values
 {
@@ -8,15 +7,13 @@ namespace AM.E3DC.RSCP.Data.Values
     /// </summary>
     public sealed class RscpUInt32 : RscpReferenceType<uint>
     {
-        private const ushort DataLength = 4;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RscpUInt32"/> class.
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="value">The value of the object.</param>
         public RscpUInt32(RscpTag tag, uint value)
-        : base(tag, RscpDataType.UInt32, DataLength, value)
+        : base(tag, value)
         {
         }
 
@@ -26,9 +23,11 @@ namespace AM.E3DC.RSCP.Data.Values
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="data">The span containing the value of this object.</param>
         internal RscpUInt32(RscpTag tag, ReadOnlySpan<byte> data)
-            : base(tag, RscpDataType.UInt32, DataLength)
+            : base(tag, data)
         {
-            this.Value = MemoryMarshal.Read<uint>(data);
         }
+
+        /// <inheritdoc />
+        public override RscpDataType DataType => RscpDataType.UInt32;
     }
 }

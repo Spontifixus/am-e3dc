@@ -10,8 +10,11 @@
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
         public RscpVoid(RscpTag tag)
-            : base(tag, RscpDataType.Void, 0)
+            : base(tag, 0)
         {
         }
+
+        /// <inheritdoc />
+        public override RscpDataType DataType => RscpDataType.Void;
     }
 }
