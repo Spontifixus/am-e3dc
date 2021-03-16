@@ -5,7 +5,7 @@ namespace AM.E3DC.RSCP.Data.Values
     /// <summary>
     /// Value object used to transport messages with a boolean payload.
     /// </summary>
-    public sealed class RscpBool : RscpStruct<bool>
+    public sealed class RscpBool : RscpReferenceType<bool>
     {
         private const ushort DataLength = 1;
 

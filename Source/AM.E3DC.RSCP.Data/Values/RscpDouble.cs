@@ -6,7 +6,7 @@ namespace AM.E3DC.RSCP.Data.Values
     /// <summary>
     /// Value object used to transport messages with a double precision (<see cref="double"/>) value payload.
     /// </summary>
-    public sealed class RscpDouble : RscpStruct<double>
+    public sealed class RscpDouble : RscpReferenceType<double>
     {
         private const ushort DataLength = 8;
 

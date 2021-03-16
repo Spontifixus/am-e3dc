@@ -48,7 +48,7 @@ namespace AM.E3DC.RSCP.Data.Values
             var dataType = MemoryMarshal.Read<RscpDataType>(source.Slice(4, 1));
             var length = MemoryMarshal.Read<ushort>(source.Slice(5, 2));
 
-            var data = source.Slice(HeaderLength);
+            var data = source.Slice(HeaderLength, length);
             return dataType switch
             {
                 RscpDataType.Void => new RscpVoid(tag),
