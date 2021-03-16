@@ -34,7 +34,12 @@ namespace AM.E3DC.RSCP.Data.Values
         /// <summary>
         /// Gets the length of the value object.
         /// </summary>
-        public ushort Length { get; }
+        public ushort Length { get; private protected set; }
+
+        /// <summary>
+        /// Gets the total length (including the header) of the value object.
+        /// </summary>
+        internal ushort TotalLength => (ushort)(HeaderLength + this.Length);
 
         /// <summary>
         /// Reads the value from the source.
@@ -63,6 +68,10 @@ namespace AM.E3DC.RSCP.Data.Values
                 RscpDataType.Double => new RscpDouble(tag, data),
                 RscpDataType.String => new RscpString(tag, data),
                 RscpDataType.Timestamp => new RscpTime(tag, data),
+                RscpDataType.ByteArray => new RscpByteArray(tag, data),
+                RscpDataType.Bitfield => new RscpBitfield(tag, data),
+                RscpDataType.Container => new RscpContainer(tag, data),
+                RscpDataType.Error => new RscpError(tag, data),
                 _ => throw new InvalidOperationException($"The data type 0x{(byte)dataType:X2} is unknown!")
             };
         }

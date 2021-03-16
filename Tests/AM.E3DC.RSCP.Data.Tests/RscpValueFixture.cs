@@ -220,5 +220,71 @@ namespace AM.E3DC.RSCP.Data.Tests
             deserialized.AssertHeader<RscpTime>(Tag, RscpDataType.Timestamp, 12);
             ((RscpTime)deserialized).Value.Should().Be(now);
         }
+
+        [Fact]
+        public void CanHandleRscpByteArray()
+        {
+            var data = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 };
+            var rscpValue = new RscpByteArray(Tag, data);
+            rscpValue.AssertHeader<RscpByteArray>(Tag, RscpDataType.ByteArray, (ushort)data.Length);
+            rscpValue.Value.Should().BeEquivalentTo(data);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpByteArray>(Tag, RscpDataType.ByteArray, (ushort)data.Length);
+            ((RscpByteArray)deserialized).Value.Should().BeEquivalentTo(data);
+        }
+
+        [Fact]
+        public void CanHandleRscpBitfield()
+        {
+            var data = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 };
+            var rscpValue = new RscpBitfield(Tag, data);
+            rscpValue.AssertHeader<RscpBitfield>(Tag, RscpDataType.Bitfield, (ushort)data.Length);
+            rscpValue.Value.Should().BeEquivalentTo(data);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpBitfield>(Tag, RscpDataType.Bitfield, (ushort)data.Length);
+            ((RscpBitfield)deserialized).Value.Should().BeEquivalentTo(data);
+        }
+
+        [Fact]
+        public void CanHandleRscpError()
+        {
+            var rscpValue = new RscpError(Tag, RscpErrorCode.AccessDenied);
+            rscpValue.AssertHeader<RscpError>(Tag, RscpDataType.Error, 1);
+            rscpValue.Value.Should().BeEquivalentTo(RscpErrorCode.AccessDenied);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpError>(Tag, RscpDataType.Error, 1);
+            ((RscpError)deserialized).Value.Should().BeEquivalentTo(RscpErrorCode.AccessDenied);
+        }
+
+        [Fact]
+        public void CanHandleRscpContainer()
+        {
+            var rscpContainer = new RscpContainer(Tag);
+            rscpContainer.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, 0);
+            rscpContainer.Children.Should().BeEmpty();
+
+            var value1 = new RscpBool(Tag, true);
+            rscpContainer.Add(value1);
+            rscpContainer.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, value1.TotalLength);
+
+            var value2 = new RscpUInt64(Tag, ulong.MaxValue);
+            var secondContainer = new RscpContainer(Tag);
+            secondContainer.Add(value2);
+            secondContainer.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, value2.TotalLength);
+
+            rscpContainer.Add(secondContainer);
+            rscpContainer.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, (ushort)(value1.TotalLength + secondContainer.TotalLength));
+
+            var deserialized = rscpContainer.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, (ushort)(value1.TotalLength + secondContainer.TotalLength));
+            ((RscpContainer)deserialized).Should().BeEquivalentTo(rscpContainer);
+        }
     }
 }

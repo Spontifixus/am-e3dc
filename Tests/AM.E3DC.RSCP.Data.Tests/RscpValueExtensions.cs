@@ -8,8 +8,7 @@ namespace AM.E3DC.RSCP.Data.Tests
     {
         public static RscpValue SerializeAndDeserialize(this RscpValue rscpValue)
         {
-            const ushort headerLength = 7;
-            var bytes = new byte[headerLength + rscpValue.Length];
+            var bytes = new byte[rscpValue.TotalLength];
             var destination = new Span<byte>(bytes);
 
             rscpValue.WriteTo(destination);
@@ -20,10 +19,13 @@ namespace AM.E3DC.RSCP.Data.Tests
         public static void AssertHeader<TValue>(this RscpValue value, RscpTag expectedTag, RscpDataType expectedDataType, ushort expectedLength)
             where TValue : RscpValue
         {
+            const ushort headerLength = 7;
+
             value.Should().BeOfType<TValue>();
             value.Tag.Should().Be(expectedTag);
             value.DataType.Should().Be(expectedDataType);
             value.Length.Should().Be(expectedLength);
+            value.TotalLength.Should().Be((ushort)(headerLength + expectedLength));
         }
     }
 }
