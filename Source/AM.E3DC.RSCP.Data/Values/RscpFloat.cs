@@ -6,7 +6,7 @@ namespace AM.E3DC.RSCP.Data.Values
     /// <summary>
     /// Value object used to transport messages with a single precision (<see cref="float"/>) value payload.
     /// </summary>
-    public sealed class RscpFloat : RscpStruct<float>
+    public sealed class RscpFloat : RscpReferenceType<float>
     {
         private const ushort DataLength = 4;
 

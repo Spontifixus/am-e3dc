@@ -5,7 +5,7 @@ namespace AM.E3DC.RSCP.Data.Values
     /// <summary>
     /// Value object used to transport messages with an unsigned 8-bit integer (<see cref="byte"/>) payload.
     /// </summary>
-    public sealed class RscpUInt8 : RscpStruct<byte>
+    public sealed class RscpUInt8 : RscpReferenceType<byte>
     {
         private const ushort DataLength = 1;
 

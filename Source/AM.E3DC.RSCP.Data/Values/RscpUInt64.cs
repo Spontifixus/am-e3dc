@@ -6,7 +6,7 @@ namespace AM.E3DC.RSCP.Data.Values
     /// <summary>
     /// Value object used to transport messages an unsigned 64-bit integer (<see cref="ulong"/>) payload.
     /// </summary>
-    public sealed class RscpUInt64 : RscpStruct<ulong>
+    public sealed class RscpUInt64 : RscpReferenceType<ulong>
     {
         private const ushort DataLength = 8;
 

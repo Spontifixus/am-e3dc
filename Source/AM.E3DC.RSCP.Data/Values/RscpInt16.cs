@@ -6,7 +6,7 @@ namespace AM.E3DC.RSCP.Data.Values
     /// <summary>
     /// Value object used to transport messages with a signed 16-bit integer (<see cref="short"/>) payload.
     /// </summary>
-    public sealed class RscpInt16 : RscpStruct<short>
+    public sealed class RscpInt16 : RscpReferenceType<short>
     {
         private const ushort DataLength = 2;
 

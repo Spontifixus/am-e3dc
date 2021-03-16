@@ -6,7 +6,7 @@ namespace AM.E3DC.RSCP.Data.Values
     /// <summary>
     /// Value object used to transport messages with a signed 32-bit integer (<see cref="int"/>) payload.
     /// </summary>
-    public sealed class RscpInt32 : RscpStruct<int>
+    public sealed class RscpInt32 : RscpReferenceType<int>
     {
         private const ushort DataLength = 4;
 
