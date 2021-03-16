@@ -45,6 +45,7 @@ namespace AM.E3DC.RSCP.Data.Values
         /// Reads the value from the source.
         /// </summary>
         /// <param name="source">The source span where the data can be read from.</param>
+        /// <exception cref="InvalidOperationException">Thrown if data type of an element is unknown.</exception>
         internal static RscpValue FromBytes(ReadOnlySpan<byte> source)
         {
             var tag = MemoryMarshal.Read<RscpTag>(source.Slice(0, 4));

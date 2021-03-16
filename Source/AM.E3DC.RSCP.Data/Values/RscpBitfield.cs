@@ -12,6 +12,7 @@ namespace AM.E3DC.RSCP.Data.Values
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="value">The value of the object.</param>
+        /// <exception cref="InvalidOperationException">Thrown if value is too long.</exception>
         public RscpBitfield(RscpTag tag, byte[] value)
         : base(tag, value)
         {

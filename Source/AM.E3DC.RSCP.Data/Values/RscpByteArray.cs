@@ -12,9 +12,17 @@ namespace AM.E3DC.RSCP.Data.Values
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="value">The value of the object.</param>
+        /// <exception cref="InvalidOperationException">Thrown if value is too long.</exception>
         public RscpByteArray(RscpTag tag, byte[] value)
-        : base(tag, (ushort)value.Length, value)
+            : base(tag, (ushort)value.Length, value)
         {
+            // If the byte array is too long, calculation of TotalLength
+            // will overflow and thus be smaller than length.
+            // If that is the case, the input array is too long.
+            if (this.TotalLength < value.Length)
+            {
+                throw new InvalidOperationException("The byte array is too long for a single message.");
+            }
         }
 
         /// <summary>
