@@ -189,5 +189,21 @@ namespace AM.E3DC.RSCP.Data.Tests
             deserialized.AssertHeader<RscpDouble>(Tag, RscpDataType.Double, 8);
             ((RscpDouble)deserialized).Value.Should().Be(value);
         }
+
+        [Theory]
+        [InlineData("Hello World")]
+        [InlineData("")]
+        [InlineData("Hello\nWorld")]
+        public void CanHandleRscpString(string value)
+        {
+            var rscpValue = new RscpString(Tag, value);
+            rscpValue.AssertHeader<RscpString>(Tag, RscpDataType.String, (ushort)value.Length);
+            rscpValue.Value.Should().Be(value);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpString>(Tag, RscpDataType.String, (ushort)value.Length);
+            ((RscpString)deserialized).Value.Should().Be(value);
+        }
     }
 }
