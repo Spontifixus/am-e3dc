@@ -63,6 +63,7 @@ namespace AM.E3DC.RSCP.Data.Values
                 RscpDataType.UInt64 => new RscpUInt64(tag, data),
                 RscpDataType.Float => new RscpFloat(tag, data),
                 RscpDataType.Double => new RscpDouble(tag, data),
+                RscpDataType.String => new RscpString(tag, data),
                 _ => throw new InvalidOperationException($"The data type 0x{(byte)dataType:X2} is unknown!")
             };
         }
