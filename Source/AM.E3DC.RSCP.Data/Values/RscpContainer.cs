@@ -52,9 +52,9 @@ namespace AM.E3DC.RSCP.Data.Values
                 throw new ArgumentNullException(nameof(value));
             }
 
-            if (this.Length + value.Length > ushort.MaxValue)
+            if (this.Length + value.TotalLength > ushort.MaxValue)
             {
-                throw new InvalidOperationException("The value cannot be added, the container is full!");
+                throw new InvalidOperationException("Can't put the value in this container because then the lid won't close.");
             }
 
             if (this.CausesCircularReference(value))

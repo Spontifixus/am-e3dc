@@ -10,6 +10,18 @@ namespace AM.E3DC.RSCP.Data.Tests
         private const RscpTag Tag = RscpTag.TAG_BAT_CHARGE_CYCLES;
 
         [Fact]
+        public void FromBytesThrowsExceptionOnInvalidDataType()
+        {
+            var value = new byte[] { 0x00, 0x00, 0x00, 0x00, 0xee, 0x00, 0x00 };
+
+            var action = new Action(() => _ = RscpValue.FromBytes(new ReadOnlySpan<byte>(value)));
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("The data type 0xEE is unknown!");
+        }
+
+        [Fact]
         public void CanHandleRscpVoid()
         {
             var rscpValue = new RscpVoid(Tag);
@@ -208,6 +220,16 @@ namespace AM.E3DC.RSCP.Data.Tests
         }
 
         [Fact]
+        public void RscpStringThrowsExceptionIfTooLong()
+        {
+            var action = new Action(() => _ = new RscpString(Tag, new string(' ', ushort.MaxValue)));
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("The string is too long for a single message.");
+        }
+
+        [Fact]
         public void CanHandleRscpTime()
         {
             var now = DateTime.Now;
@@ -236,6 +258,16 @@ namespace AM.E3DC.RSCP.Data.Tests
         }
 
         [Fact]
+        public void RscpByteArrayThrowsExceptionIfTooLong()
+        {
+            var action = new Action(() => _ = new RscpByteArray(Tag, new byte[ushort.MaxValue]));
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("The byte array is too long for a single message.");
+        }
+
+        [Fact]
         public void CanHandleRscpBitfield()
         {
             var data = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05 };
@@ -247,6 +279,16 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             deserialized.AssertHeader<RscpBitfield>(Tag, RscpDataType.Bitfield, (ushort)data.Length);
             ((RscpBitfield)deserialized).Value.Should().BeEquivalentTo(data);
+        }
+
+        [Fact]
+        public void RscpBitfieldThrowsExceptionIfTooLong()
+        {
+            var action = new Action(() => _ = new RscpBitfield(Tag, new byte[ushort.MaxValue]));
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("The byte array is too long for a single message.");
         }
 
         [Fact]
@@ -285,6 +327,68 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             deserialized.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, (ushort)(value1.TotalLength + secondContainer.TotalLength));
             ((RscpContainer)deserialized).Should().BeEquivalentTo(rscpContainer);
+        }
+
+        [Fact]
+        public void RscpContainerThrowsExceptionOnCircularReference()
+        {
+            var rscpContainer = new RscpContainer(Tag);
+
+            var action = new Action(() =>
+                {
+                    rscpContainer.Add(rscpContainer);
+                });
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("The value cannot be added, because it would cause a circular reference.");
+
+            var secondContainer = new RscpContainer(Tag);
+            secondContainer.Add(rscpContainer);
+
+            var action2 = new Action(() =>
+            {
+                rscpContainer.Add(secondContainer);
+            });
+
+            action2.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("The value cannot be added, because it would cause a circular reference.");
+        }
+
+        [Fact]
+        public void RscpContainerThrowsExceptionIfNullAdded()
+        {
+            var rscpContainer = new RscpContainer(Tag);
+
+            var action = new Action(() =>
+            {
+                rscpContainer.Add(null);
+            });
+
+            action.Should()
+                .Throw<ArgumentNullException>()
+                .Where(e => e.ParamName == "value");
+        }
+
+        [Fact]
+        public void RscpContainerThrowsExceptionWhenTooLong()
+        {
+            var rscpContainer = new RscpContainer(Tag);
+
+            var action = new Action(() =>
+            {
+                var data = new byte[short.MaxValue];
+                data.Initialize();
+                var value1 = new RscpByteArray(Tag, data);
+                var value2 = new RscpByteArray(Tag, data);
+                rscpContainer.Add(value1);
+                rscpContainer.Add(value2);
+            });
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("Can't put the value in this container because then the lid won't close.");
         }
     }
 }
