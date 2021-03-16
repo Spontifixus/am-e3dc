@@ -13,7 +13,7 @@ namespace AM.E3DC.RSCP.Data
         private const ushort ChecksumLength = 4;
         private static readonly byte[] MagicBytes = { 0xE3, 0xDC };
         private byte protocolVersion;
-        private RscpTime timestamp;
+        private RscpTimestamp timestamp;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RscpFrame"/> class.
@@ -34,7 +34,7 @@ namespace AM.E3DC.RSCP.Data
             get => this.timestamp.ToDateTime();
             internal set
             {
-                this.timestamp = new RscpTime(value);
+                this.timestamp = new RscpTimestamp(value);
             }
         }
 

@@ -14,22 +14,19 @@ namespace AM.E3DC.RSCP.Data.Values
         /// Initializes a new instance of the <see cref="RscpReferenceType{TValue}"/> class.
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
-        /// <param name="dataType">The data type of the value object.</param>
-        /// <param name="length">The length of the value object.</param>
-        protected RscpReferenceType(RscpTag tag, RscpDataType dataType, ushort length)
-            : base(tag, dataType, length)
+        /// <param name="value">The value of this object.</param>
+        protected RscpReferenceType(RscpTag tag, TValue value)
+            : base(tag, (ushort)Marshal.SizeOf<TValue>(), value)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RscpReferenceType{TValue}"/> class.
+        /// Initializes a new instance of the <see cref="RscpValue{TValue}"/> class.
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
-        /// <param name="dataType">The data type of the value object.</param>
-        /// <param name="length">The length of the value object.</param>
-        /// <param name="value">The value of this object.</param>
-        protected RscpReferenceType(RscpTag tag, RscpDataType dataType, ushort length, TValue value)
-            : base(tag, dataType, length, value)
+        /// <param name="data">The raw data of this object.</param>
+        protected RscpReferenceType(RscpTag tag, ReadOnlySpan<byte> data)
+            : this(tag, MemoryMarshal.Read<TValue>(data))
         {
         }
 

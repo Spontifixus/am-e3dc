@@ -7,15 +7,13 @@ namespace AM.E3DC.RSCP.Data.Values
     /// </summary>
     public sealed class RscpUInt8 : RscpReferenceType<byte>
     {
-        private const ushort DataLength = 1;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RscpUInt8"/> class.
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="value">The value of the object.</param>
         public RscpUInt8(RscpTag tag, byte value)
-        : base(tag, RscpDataType.UInt8, DataLength, value)
+        : base(tag, value)
         {
         }
 
@@ -25,9 +23,11 @@ namespace AM.E3DC.RSCP.Data.Values
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="data">The span containing the value of this object.</param>
         internal RscpUInt8(RscpTag tag, ReadOnlySpan<byte> data)
-            : base(tag, RscpDataType.UInt8, DataLength)
+            : base(tag, data)
         {
-            this.Value = data[0];
         }
+
+        /// <inheritdoc />
+        public override RscpDataType DataType => RscpDataType.UInt8;
     }
 }

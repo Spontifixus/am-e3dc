@@ -14,12 +14,10 @@ namespace AM.E3DC.RSCP.Data.Values
         /// Initializes a new instance of the <see cref="RscpValue"/> class.
         /// </summary>
         /// <param name="tag">The tag of the value object.</param>
-        /// <param name="dataType">The data type of the value object.</param>
         /// <param name="length">The length of the value object.</param>
-        protected RscpValue(RscpTag tag, RscpDataType dataType, ushort length)
+        protected RscpValue(RscpTag tag, ushort length)
         {
             this.Tag = tag;
-            this.DataType = dataType;
             this.Length = length;
         }
 
@@ -31,7 +29,7 @@ namespace AM.E3DC.RSCP.Data.Values
         /// <summary>
         /// Gets the data type of the value object.
         /// </summary>
-        public RscpDataType DataType { get; }
+        public abstract RscpDataType DataType { get; }
 
         /// <summary>
         /// Gets the length of the value object.
@@ -64,6 +62,7 @@ namespace AM.E3DC.RSCP.Data.Values
                 RscpDataType.Float => new RscpFloat(tag, data),
                 RscpDataType.Double => new RscpDouble(tag, data),
                 RscpDataType.String => new RscpString(tag, data),
+                RscpDataType.Timestamp => new RscpTime(tag, data),
                 _ => throw new InvalidOperationException($"The data type 0x{(byte)dataType:X2} is unknown!")
             };
         }

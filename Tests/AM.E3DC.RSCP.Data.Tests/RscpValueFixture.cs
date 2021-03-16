@@ -1,4 +1,5 @@
-﻿using AM.E3DC.RSCP.Data.Values;
+﻿using System;
+using AM.E3DC.RSCP.Data.Values;
 using FluentAssertions;
 using Xunit;
 
@@ -204,6 +205,20 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             deserialized.AssertHeader<RscpString>(Tag, RscpDataType.String, (ushort)value.Length);
             ((RscpString)deserialized).Value.Should().Be(value);
+        }
+
+        [Fact]
+        public void CanHandleRscpTime()
+        {
+            var now = DateTime.Now;
+            var rscpValue = new RscpTime(Tag, now);
+            rscpValue.AssertHeader<RscpTime>(Tag, RscpDataType.Timestamp, 12);
+            rscpValue.Value.Should().Be(now);
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpTime>(Tag, RscpDataType.Timestamp, 12);
+            ((RscpTime)deserialized).Value.Should().Be(now);
         }
     }
 }

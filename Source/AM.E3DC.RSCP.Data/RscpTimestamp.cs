@@ -11,13 +11,13 @@ namespace AM.E3DC.RSCP.Data
     /// the unix epoch (01.01.1970).
     /// </remarks>
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public readonly struct RscpTime
+    public readonly struct RscpTimestamp
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RscpTime"/> struct.
+        /// Initializes a new instance of the <see cref="RscpTimestamp"/> struct.
         /// </summary>
         /// <param name="timestamp">The timestamp that is to be represented by this instance.</param>
-        public RscpTime(DateTime timestamp)
+        public RscpTimestamp(DateTime timestamp)
         {
             var unixTimestamp = timestamp.Ticks - new DateTime(1970, 1, 1).Ticks;
             this.Seconds = unixTimestamp / TimeSpan.TicksPerSecond;
