@@ -1,7 +1,7 @@
 ﻿// ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
 // ReSharper disable UnusedMember.Global
-namespace AM.E3DC.RSCP.Data
+namespace AM.E3dc.Rscp.Data
 {
     /// <summary>
     /// This enum contains the tags that can be sent to the E3DC.

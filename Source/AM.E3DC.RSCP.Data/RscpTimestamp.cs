@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace AM.E3DC.RSCP.Data
+namespace AM.E3dc.Rscp.Data
 {
     /// <summary>
     /// This class represents a time value.

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using FluentAssertions;
 using Xunit;
 
-namespace AM.E3DC.RSCP.Data.Tests
+namespace AM.E3dc.Rscp.Data.Tests
 {
     public class RscpTimestampFixture
     {

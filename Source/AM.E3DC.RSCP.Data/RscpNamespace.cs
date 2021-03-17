@@ -2,7 +2,7 @@
 // ReSharper disable IdentifierTypo
 // ReSharper disable UnusedMember.Global
 
-namespace AM.E3DC.RSCP.Data
+namespace AM.E3dc.Rscp.Data
 {
     /// <summary>
     /// This enum provides all namespaces for the messages.

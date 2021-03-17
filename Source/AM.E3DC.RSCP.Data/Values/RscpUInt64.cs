@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AM.E3DC.RSCP.Data.Values
+namespace AM.E3dc.Rscp.Data.Values
 {
     /// <summary>
     /// Value object used to transport messages an unsigned 64-bit integer (<see cref="ulong"/>) payload.

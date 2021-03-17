@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace AM.E3DC.RSCP.Data.Values
+namespace AM.E3dc.Rscp.Data.Values
 {
     /// <summary>
     /// Value object used to transport messages with an unsigned 16-bit integer (<see cref="ushort"/>) payload.
