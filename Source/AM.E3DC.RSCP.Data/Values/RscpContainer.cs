@@ -54,7 +54,7 @@ namespace AM.E3DC.RSCP.Data.Values
 
             if (this.Length + value.TotalLength > ushort.MaxValue)
             {
-                throw new InvalidOperationException("Can't put the value in this container because then the lid won't close.");
+                throw new InvalidOperationException("Can't put the value into this container because then the lid won't close.");
             }
 
             if (this.CausesCircularReference(value))
@@ -63,7 +63,7 @@ namespace AM.E3DC.RSCP.Data.Values
             }
 
             this.children.Add(value);
-            this.Length = (ushort)this.children.Sum(child => child.TotalLength);
+            this.Length += value.TotalLength;
         }
 
         private protected override void OnWrite(Span<byte> destination)

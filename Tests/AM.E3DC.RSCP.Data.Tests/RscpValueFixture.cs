@@ -388,7 +388,7 @@ namespace AM.E3DC.RSCP.Data.Tests
 
             action.Should()
                 .Throw<InvalidOperationException>()
-                .WithMessage("Can't put the value in this container because then the lid won't close.");
+                .WithMessage("Can't put the value into this container because then the lid won't close.");
         }
     }
 }
