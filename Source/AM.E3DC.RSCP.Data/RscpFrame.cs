@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using AM.E3DC.RSCP.Data.Values;
+using AM.E3dc.Rscp.Data.Values;
 using Force.Crc32;
 
-namespace AM.E3DC.RSCP.Data
+namespace AM.E3dc.Rscp.Data
 {
     /// <summary>
     /// This class represents an RSCP control frame that can be used to communicate with an E3DC power station.

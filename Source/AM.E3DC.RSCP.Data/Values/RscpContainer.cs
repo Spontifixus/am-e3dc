@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AM.E3DC.RSCP.Data.Values
+namespace AM.E3dc.Rscp.Data.Values
 {
     /// <summary>
     /// Value object used to transport messages with a <see cref="string"/> payload.

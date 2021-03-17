@@ -1,4 +1,4 @@
-﻿namespace AM.E3DC.RSCP.Data.Values
+﻿namespace AM.E3dc.Rscp.Data.Values
 {
     /// <summary>
     /// This is the base class for value objects that can be added to an RscpMessage.

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Source\AM.E3dc.Rscp.Data\AM.E3dc.Rscp.Data.csproj" />
+    <ProjectReference Include="..\..\Source\AM.E3dc.Rscp.Crypto\AM.E3dc.Rscp.Crypto.csproj" />
   </ItemGroup>
 
 </Project>

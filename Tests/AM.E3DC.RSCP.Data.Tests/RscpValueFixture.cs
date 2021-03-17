@@ -1,9 +1,9 @@
 ﻿using System;
-using AM.E3DC.RSCP.Data.Values;
+using AM.E3dc.Rscp.Data.Values;
 using FluentAssertions;
 using Xunit;
 
-namespace AM.E3DC.RSCP.Data.Tests
+namespace AM.E3dc.Rscp.Data.Tests
 {
     public class RscpValueFixture
     {
