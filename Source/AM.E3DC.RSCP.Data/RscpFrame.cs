@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using AM.E3DC.RSCP.Data.Values;
 using Force.Crc32;
 
 namespace AM.E3DC.RSCP.Data
@@ -11,7 +13,11 @@ namespace AM.E3DC.RSCP.Data
     {
         private const ushort HeaderLength = 18;
         private const ushort ChecksumLength = 4;
+
         private static readonly byte[] MagicBytes = { 0xE3, 0xDC };
+
+        private readonly List<RscpValue> values = new List<RscpValue>();
+
         private byte protocolVersion;
         private RscpTimestamp timestamp;
 
@@ -69,7 +75,29 @@ namespace AM.E3DC.RSCP.Data
         /// Gets the total length of this frame.
         /// </summary>
         /// <remarks>The length is calculated without the CRC32 checksum.</remarks>
-        public ushort Length => 0;
+        public ushort Length { get; private set; }
+
+        /// <summary>
+        /// Adds a value to the frame.
+        /// </summary>
+        /// <param name="value">The value to be added.</param>
+        /// <exception cref="ArgumentNullException">Thrown if no value was passed.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the frame is full already.</exception>
+        public void Add(RscpValue value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (this.Length + value.TotalLength > ushort.MaxValue)
+            {
+                throw new InvalidOperationException("Can't put the value into this frame because then it would be too long.");
+            }
+
+            this.values.Add(value);
+            this.Length += value.TotalLength;
+        }
 
         /// <summary>
         /// Gets the raw bytes representing this frame.
@@ -106,6 +134,13 @@ namespace AM.E3DC.RSCP.Data
 
             var length = this.Length;
             MemoryMarshal.Write(rawData.Slice(16, 2), ref length);
+
+            var offset = HeaderLength;
+            foreach (var rscpValue in this.values)
+            {
+                rscpValue.WriteTo(rawData.Slice(offset, rscpValue.TotalLength));
+                offset += rscpValue.TotalLength;
+            }
 
             if (this.HasChecksum)
             {
