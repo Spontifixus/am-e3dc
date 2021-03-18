@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using AM.E3dc.Rscp.Data.Values;
 using Force.Crc32;
@@ -16,7 +18,7 @@ namespace AM.E3dc.Rscp.Data
 
         private static readonly byte[] MagicBytes = { 0xE3, 0xDC };
 
-        private readonly List<RscpValue> values = new List<RscpValue>();
+        private readonly Dictionary<RscpTag, RscpValue> values = new Dictionary<RscpTag, RscpValue>();
 
         private byte protocolVersion;
         private RscpTimestamp timestamp;
@@ -29,6 +31,25 @@ namespace AM.E3dc.Rscp.Data
             this.HasChecksum = true;
             this.ProtocolVersion = 1;
             this.Timestamp = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RscpFrame"/> class.
+        /// </summary>
+        /// <param name="bytes">The raw bytes to construct the frame from.</param>
+        /// <exception cref="ArgumentNullException">Thrown if the a null value has been passed to this method.</exception>
+        /// <exception cref="ArgumentException">Thrown if the no bytes have been passed to the method.</exception>
+        internal RscpFrame(ReadOnlySpan<byte> bytes)
+        {
+            if (bytes == null)
+            {
+                throw new ArgumentNullException(nameof(bytes));
+            }
+
+            if (bytes.IsEmpty)
+            {
+                throw new ArgumentException("No bytes have been passed.");
+            }
         }
 
         /// <summary>
@@ -78,6 +99,41 @@ namespace AM.E3dc.Rscp.Data
         public ushort Length { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether an error was returned from the E3/DC unit.
+        /// </summary>
+        /// <value><c>true</c> if an error was returned; <c>false</c> otherwise.</value>
+        public bool HasError => this.values.Values.Any(rscpValue => rscpValue.DataType == RscpDataType.Error);
+
+        /// <summary>
+        /// Tries to receive the value with the specified tag and the specified value type from the frame.
+        /// </summary>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="tag">The tag to be returned.</param>
+        /// <param name="value">The value that was found.</param>
+        /// <returns><c>true</c> if the value was found; <c>false</c> otherwise.</returns>
+        public bool TryGetValue<TValue>(RscpTag tag, out TValue value)
+        where TValue : RscpValue
+        {
+            if (this.values.ContainsKey(tag) && this.values[tag] is TValue typedValue)
+            {
+                value = typedValue;
+                return true;
+            }
+
+            value = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the errors that are contained in this instance's values.
+        /// </summary>
+        /// <returns>An enumeration of RscpErrors.</returns>
+        public IReadOnlyList<RscpError> GetErrors()
+        {
+            return new ReadOnlyCollection<RscpError>(this.values.Values.OfType<RscpError>().ToArray());
+        }
+
+        /// <summary>
         /// Adds a value to the frame.
         /// </summary>
         /// <param name="value">The value to be added.</param>
@@ -95,7 +151,7 @@ namespace AM.E3dc.Rscp.Data
                 throw new InvalidOperationException("Can't put the value into this frame because then it would be too long.");
             }
 
-            this.values.Add(value);
+            this.values.Add(value.Tag, value);
             this.Length += value.TotalLength;
         }
 
@@ -136,7 +192,7 @@ namespace AM.E3dc.Rscp.Data
             MemoryMarshal.Write(rawData.Slice(16, 2), ref length);
 
             var offset = HeaderLength;
-            foreach (var rscpValue in this.values)
+            foreach (var rscpValue in this.values.Values)
             {
                 rscpValue.WriteTo(rawData.Slice(offset, rscpValue.TotalLength));
                 offset += rscpValue.TotalLength;

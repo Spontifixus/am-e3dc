@@ -1,5 +1,5 @@
 ﻿using System;
-using AM.E3dc.Rscp.Common;
+using AM.E3dc.Rscp.Abstractions;
 using FluentAssertions;
 using Xunit;
 
@@ -65,7 +65,7 @@ namespace AM.E3dc.Rscp.Crypto.Tests
         public void EncryptThrowsExceptionIfPlainTextIsEmpty()
         {
             this.subject.SetPassword("abc123");
-            var action = new Action(() => this.subject.Encrypt(new byte[0]));
+            var action = new Action(() => this.subject.Encrypt(Array.Empty<byte>()));
 
             action.Should()
                 .Throw<ArgumentException>()
@@ -97,7 +97,7 @@ namespace AM.E3dc.Rscp.Crypto.Tests
         public void DecryptThrowsExceptionIfCipherTextIsEmpty()
         {
             this.subject.SetPassword("abc123");
-            var action = new Action(() => this.subject.Decrypt(new byte[0]));
+            var action = new Action(() => this.subject.Decrypt(Array.Empty<byte>()));
 
             action.Should()
                 .Throw<ArgumentException>()

@@ -86,7 +86,7 @@ namespace AM.E3dc.Rscp.Data.Values
             var offset = 0;
             do
             {
-                var rscpValue = FromBytes(data.Slice(offset));
+                var rscpValue = FromBytes(data[offset..]);
                 this.Add(rscpValue);
                 offset += rscpValue.TotalLength;
             }
