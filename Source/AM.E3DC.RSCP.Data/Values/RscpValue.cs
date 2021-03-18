@@ -92,7 +92,7 @@ namespace AM.E3dc.Rscp.Data.Values
             var length = this.Length;
             MemoryMarshal.Write(destination.Slice(5, 2), ref length);
 
-            this.OnWrite(destination.Slice(HeaderLength));
+            this.OnWrite(destination[HeaderLength..]);
         }
 
         /// <summary>

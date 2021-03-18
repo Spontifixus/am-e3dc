@@ -26,6 +26,8 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(this.now);
+            this.subject.HasError.Should().BeFalse();
+            this.subject.GetErrors().Should().BeEmpty();
         }
 
         [Theory]
@@ -118,11 +120,17 @@ namespace AM.E3dc.Rscp.Data.Tests
         }
 
         [Fact]
-        public void CanAddValue()
+        public void CanAddAndRetrieveSingleValue()
         {
             var value = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
 
             this.subject.Add(value);
+            this.subject.HasError.Should().BeFalse();
+            this.subject.TryGetValue<RscpInt8>(RscpTag.TAG_BAT_DATA, out var retrievedValue).Should().BeTrue();
+            retrievedValue.Should().BeEquivalentTo(value);
+
+            this.subject.HasError.Should().BeFalse();
+            this.subject.GetErrors().Should().BeEmpty();
 
             var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
 
@@ -147,14 +155,26 @@ namespace AM.E3dc.Rscp.Data.Tests
         }
 
         [Fact]
-        public void CanAddMultipleValues()
+        public void CanAddAndRetrieveMultipleValues()
         {
-            var value = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
+            var value1 = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
+            var value2 = new RscpInt8(RscpTag.TAG_RSCP_AUTHENTICATION, 0x7F);
 
-            this.subject.Add(value);
-            this.subject.Add(value);
+            this.subject.Add(value1);
+            this.subject.Add(value2);
 
-            var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
+            this.subject.HasError.Should().BeFalse();
+
+            this.subject.TryGetValue<RscpInt8>(RscpTag.TAG_BAT_DATA, out var retrievedValue1).Should().BeTrue();
+            retrievedValue1.Should().BeEquivalentTo(value1);
+
+            this.subject.TryGetValue<RscpInt8>(RscpTag.TAG_RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
+            retrievedValue2.Should().BeEquivalentTo(value2);
+
+            this.subject.HasError.Should().BeFalse();
+            this.subject.GetErrors().Should().BeEmpty();
+
+            var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
 
             // No need to write a fixed CRC into the result here,
             // as we don't want to test the CrC32 algorithm.
@@ -197,6 +217,42 @@ namespace AM.E3dc.Rscp.Data.Tests
             action.Should()
                 .Throw<ArgumentNullException>()
                 .Where(e => e.ParamName == "value");
+        }
+
+        [Fact]
+        public void TryGetValueDoesNotThrowIfNotFound()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void TryGetValueDoesNotThrowIfEmpty()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void TryGetValueReturnsFalseIfTypeMismatch()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void TryGetValueReturnsFalseIfTagMismatch()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void CanDetectErrorValue()
+        {
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void CanGetErrorValues()
+        {
+            throw new NotImplementedException();
         }
     }
 }
