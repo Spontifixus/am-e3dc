@@ -8,4 +8,10 @@
     <PackageReference Include="Crc32.NET" Version="1.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleToSuffix Include=".Tests" />
+    <InternalsVisibleTo Include="AM.E3dc.Rscp" />
+  </ItemGroup>
+
+
 </Project>

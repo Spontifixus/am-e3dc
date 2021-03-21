@@ -197,6 +197,19 @@ namespace AM.E3dc.Rscp.Data.Tests
         }
 
         [Fact]
+        public void AddThrowsExceptionIfTagWasAlreadyAdded()
+        {
+            var value = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
+
+            this.subject.Add(value);
+            var action = new Action(() => this.subject.Add(value));
+
+            action.Should()
+                .Throw<InvalidOperationException>()
+                .WithMessage("A value with this tag was added to the frame already.");
+        }
+
+        [Fact]
         public void AddThrowsExceptionIfValueTooLarge()
         {
             var value = new RscpByteArray(RscpTag.TAG_BAT_DATA, new byte[short.MaxValue]);
@@ -222,37 +235,125 @@ namespace AM.E3dc.Rscp.Data.Tests
         [Fact]
         public void TryGetValueDoesNotThrowIfNotFound()
         {
-            throw new NotImplementedException();
+            var value = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
+            this.subject.Add(value);
+
+            var action = new Action(() =>
+            {
+                this.subject.TryGetValue<RscpBool>(RscpTag.TAG_BAT_CHARGE_CYCLES, out _);
+                this.subject.TryGetValue<RscpBitfield>(RscpTag.TAG_BAT_CURRENT, out _);
+            });
+
+            action.Should().NotThrow();
         }
 
         [Fact]
         public void TryGetValueDoesNotThrowIfEmpty()
         {
-            throw new NotImplementedException();
+            var action = new Action(() =>
+            {
+                this.subject.TryGetValue<RscpBool>(RscpTag.TAG_BAT_CHARGE_CYCLES, out _);
+            });
+
+            action.Should().NotThrow();
         }
 
         [Fact]
         public void TryGetValueReturnsFalseIfTypeMismatch()
         {
-            throw new NotImplementedException();
+            var value = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
+            this.subject.Add(value);
+
+            this.subject.TryGetValue<RscpUInt16>(RscpTag.TAG_BAT_CURRENT, out _).Should().BeFalse();
         }
 
         [Fact]
         public void TryGetValueReturnsFalseIfTagMismatch()
         {
-            throw new NotImplementedException();
+            var value = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
+            this.subject.Add(value);
+
+            this.subject.TryGetValue<RscpBool>(RscpTag.TAG_BAT_CHARGE_CYCLES, out _).Should().BeFalse();
         }
 
         [Fact]
-        public void CanDetectErrorValue()
+        public void CanDetectAndGetErrorValue()
         {
-            throw new NotImplementedException();
+            var value1 = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
+            var value2 = new RscpError(RscpTag.TAG_BAT_CHARGE_CYCLES, RscpErrorCode.Again);
+
+            this.subject.Add(value1);
+            this.subject.Add(value2);
+
+            this.subject.HasError.Should().BeTrue();
+            this.subject.GetErrors().Should().NotBeNullOrEmpty();
+            this.subject.GetErrors()[0].Should().BeEquivalentTo(value2);
         }
 
         [Fact]
-        public void CanGetErrorValues()
+        public void CanReadFrameFromBytes()
         {
-            throw new NotImplementedException();
+            var rawData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
+            Crc32Algorithm.ComputeAndWriteToEnd(rawData);
+
+            var expectedValue1 = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
+            var expectedValue2 = new RscpInt8(RscpTag.TAG_RSCP_AUTHENTICATION, 0x7F);
+
+            var frame = new RscpFrame(rawData);
+
+            frame.Length.Should().Be(16);
+            frame.HasChecksum.Should().BeTrue();
+            frame.Timestamp.Ticks.Should().Be(DateTime.UnixEpoch.Ticks + (60 * TimeSpan.TicksPerSecond) + 2);
+
+            frame.TryGetValue<RscpInt8>(RscpTag.TAG_BAT_DATA, out var retrievedValue1).Should().BeTrue();
+            retrievedValue1.Should().BeEquivalentTo(expectedValue1);
+
+            frame.TryGetValue<RscpInt8>(RscpTag.TAG_RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
+            retrievedValue2.Should().BeEquivalentTo(expectedValue2);
+        }
+
+        [Fact]
+        public void ReadFrameThrowsExceptionIfNoDataWasPassed()
+        {
+            var action = new Action(() => _ = new RscpFrame(null));
+
+            action.Should()
+                .Throw<ArgumentNullException>()
+                .Where(e => e.ParamName == "data");
+        }
+
+        [Fact]
+        public void ReadFrameThrowsExceptionIfEmptyDataWasPassed()
+        {
+            var action = new Action(() => _ = new RscpFrame(Array.Empty<byte>()));
+
+            action.Should()
+                .Throw<ArgumentException>()
+                .WithMessage("No bytes have been passed.");
+        }
+
+        [Fact]
+        public void ReadFrameThrowsExceptionIfMagicBytesAreMissing()
+        {
+            var rawData = new byte[] { 0xAB, 0xCD, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
+            Crc32Algorithm.ComputeAndWriteToEnd(rawData);
+
+            var action = new Action(() => _ = new RscpFrame(rawData));
+
+            action.Should()
+                .Throw<ArgumentException>()
+                .WithMessage("Data does not contain an RscpFrame.");
+        }
+
+        [Fact]
+        public void ReadFrameThrowsExceptionIfChecksumIsIncorrect()
+        {
+            var rawData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
+            var action = new Action(() => _ = new RscpFrame(rawData));
+
+            action.Should()
+                .Throw<ArgumentException>()
+                .WithMessage("Data checksum is invalid.");
         }
     }
 }
