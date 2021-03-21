@@ -31,6 +31,6 @@ namespace AM.E3dc.Rscp.Connectivity
         public void Dispose() => this.tcpClient.Dispose();
 
         /// <inheritdoc cref="TcpClient.GetStream()"/>
-        public NetworkStream GetStream() => this.tcpClient.GetStream();
+        public INetworkStream GetStream() => new NetworkStreamWrapper(this.tcpClient.GetStream());
     }
 }
