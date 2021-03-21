@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace AM.E3dc.Rscp
+namespace AM.E3dc.Rscp.Connectivity
 {
     /// <summary>
     /// Provides an interface for the standard .NET <see cref="TcpClient"/>
@@ -10,9 +10,6 @@ namespace AM.E3dc.Rscp
     /// </summary>
     internal interface ITcpClient
     {
-        /// <inheritdoc cref="TcpClient.Connected"/>
-        bool Connected { get; }
-
         /// <inheritdoc cref="TcpClient.ConnectAsync(IPAddress, int)"/>
         Task ConnectAsync(IPAddress address, int port);
 

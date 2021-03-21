@@ -35,13 +35,13 @@ namespace AM.E3dc.Rscp.Example
 
             var e3dcConnection = new E3dcConnection(logger);
 
-            var endpoint = new IPEndPoint(IPAddress.Parse("192.168.0.101"), 5033);
+            var endpoint = new IPEndPoint(IPAddress.Parse("192.168.0.2"), 5033);
             await e3dcConnection.ConnectAsync(endpoint, "your-rscp-password");
 
             var authFrame = new RscpFrame();
             var authContainer = new RscpContainer(RscpTag.TAG_RSCP_REQ_AUTHENTICATION);
-            authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_USER, "your-e3dc-portal@example.com"));
-            authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_PASSWORD, "your-e3-dc-portal-password"));
+            authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_USER, "your-portal-username@example.com"));
+            authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_PASSWORD, "your-portal-password"));
             authFrame.Add(authContainer);
 
             var response = await e3dcConnection.SendAsync(authFrame);
