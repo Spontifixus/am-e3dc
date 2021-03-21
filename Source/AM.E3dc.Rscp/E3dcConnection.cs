@@ -1,27 +1,29 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using AM.E3dc.Rscp.Connectivity;
 using AM.E3dc.Rscp.Crypto;
 using AM.E3dc.Rscp.Data;
 using Microsoft.Extensions.Logging;
-using Stateless;
 
 namespace AM.E3dc.Rscp
 {
     /// <summary>
     /// Use an instance of this class to interact with your E3/DC solar power station.
     /// </summary>
+    [SuppressMessage("ReSharper", "InconsistentlySynchronizedField", Justification = "For the logger, synchronization does not matter, for the connection state everything is fine as it is.")]
     public sealed class E3dcConnection : IDisposable
     {
         private readonly object syncRoot = new object();
         private readonly ILogger<E3dcConnection> logger;
-        private readonly ITcpClient tcpClient;
         private readonly ICryptoProvider cryptoProvider;
-
-        private ConnectionState connectionState = ConnectionState.Disconnected;
+        private readonly ITcpClient tcpClient;
+        private readonly SemaphoreSlim sendQueueSemaphore = new SemaphoreSlim(1);
+        private ConnectionState connectionState = ConnectionState.New;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="E3dcConnection"/> class.
@@ -47,8 +49,6 @@ namespace AM.E3dc.Rscp
             this.logger = logger;
             this.logger?.LogTrace(".ctor()");
 
-            using var scope = this.logger?.BeginScope("Initialize");
-
             this.tcpClient = tcpClient;
             this.cryptoProvider = cryptoProvider;
         }
@@ -58,16 +58,12 @@ namespace AM.E3dc.Rscp
         /// </summary>
         private enum ConnectionState
         {
-            Disconnected,
+            New,
             Connecting,
-            Connected
+            Connected,
+            Disconnecting,
+            Disconnected
         }
-
-        /// <summary>
-        /// Gets a flag indicating whether this instance is currently connected to an E3/DC unit.
-        /// </summary>
-        /// <value>If set to <c>true</c> the instance is connected.</value>
-        public bool IsConnected => this.connectionState == ConnectionState.Connected;
 
         /// <summary>
         /// Connects to the E3DC power station, but does not authorize.
@@ -85,21 +81,23 @@ namespace AM.E3dc.Rscp
             {
                 this.logger?.LogTrace(".ConnectAsync({endpoint}, {rscpPassword})", endpoint, "****"); // No, I'm not gonna log a password.
 
-                if (this.connectionState != ConnectionState.Disconnected)
+                if (this.connectionState != ConnectionState.New)
                 {
-                    this.logger?.LogWarning("Cannot connect to the E3/DC power station right now (State: {connectionState}).", this.connectionState);
-                    throw new InvalidOperationException("The instance is already connected to an E3/DC power station or currently initializing a connection.");
+                    this.logger?.LogWarning("Cannot connect to the E3/DC power station (State: {connectionState}).", this.connectionState);
+                    throw new InvalidOperationException($"The instance is or was already connected to an E3/DC power station (State: {this.connectionState}).");
                 }
 
                 this.connectionState = ConnectionState.Connecting;
             }
 
             this.logger?.LogDebug("Connecting to {endpoint}...", endpoint);
-            await this.tcpClient.ConnectAsync(endpoint.Address, endpoint.Port);
+            await this.tcpClient.ConnectAsync(endpoint.Address, endpoint.Port).ConfigureAwait(false);
             this.logger?.LogInformation("Connected to {endpoint}.", endpoint);
 
+            this.logger?.LogDebug("Configuring encryption...");
             this.cryptoProvider.SetPassword(rscpPassword);
 
+            this.logger?.LogInformation("Connected to E3/DC power station at {endpoint}.", endpoint);
             this.connectionState = ConnectionState.Connected;
         }
 
@@ -112,60 +110,115 @@ namespace AM.E3dc.Rscp
         /// <exception cref="InvalidOperationException">Thrown if this instance is not connected to an E3/DC unit.</exception>
         public async Task<RscpFrame> SendAsync(RscpFrame frame, CancellationToken cancellationToken = default)
         {
-            this.logger?.LogTrace(".SendAsync(RscpFrame)");
-
-            this.logger.LogDebug("Serializing frame...");
-            var frameData = frame.GetBytes();
-
-            this.logger.LogDebug("Encrypting frame...");
-            var encryptedFrame = this.cryptoProvider.Encrypt(frameData);
-
-            this.logger?.LogDebug("Writing {byteCount} bytes to the stream...", encryptedFrame.Length);
-            var stream = this.tcpClient.GetStream();
-            await stream.WriteAsync(encryptedFrame, cancellationToken);
-            this.logger?.LogDebug("Successfully wrote {byteCount} bytes to the stream.", encryptedFrame.Length);
-
-            this.logger?.LogDebug("Waiting for response...");
-            while (!stream.DataAvailable)
+            lock (this.syncRoot)
             {
-                await Task.Delay(100, cancellationToken);
+                this.logger?.LogTrace(".SendAsync(RscpFrame)");
+
+                if (this.connectionState != ConnectionState.Connected)
+                {
+                    this.logger?.LogWarning("Cannot communicate with E3/DC power station (State: {connectionState}).", this.connectionState);
+                    throw new InvalidOperationException($"The instance is not connected to an E3/DC power station (State: {this.connectionState}).");
+                }
             }
 
-            this.logger?.LogDebug("Reading response from stream...");
-            var buffer = new byte[4096];
-            var offset = 0;
-            do
+            await this.sendQueueSemaphore.WaitAsync(cancellationToken);
+            try
             {
-                var bytesRead = await stream.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset), cancellationToken);
-                offset += bytesRead;
+                this.logger?.LogTrace(".SendFrameAsync(RscpFrame)");
+
+                this.logger.LogDebug("Serializing frame...");
+                var frameData = frame.GetBytes();
+
+                this.logger.LogDebug("Encrypting frame...");
+                var encryptedFrame = this.cryptoProvider.Encrypt(frameData);
+
+                this.logger?.LogDebug("Writing {byteCount} bytes to the stream...", encryptedFrame.Length);
+                var stream = this.tcpClient.GetStream();
+                await stream.WriteAsync(encryptedFrame, cancellationToken).ConfigureAwait(false);
+                this.logger?.LogDebug("Successfully wrote {byteCount} bytes to the stream.", encryptedFrame.Length);
+
+                this.logger?.LogDebug("Waiting for response...");
+                while (!stream.DataAvailable)
+                {
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                }
+
+                this.logger?.LogDebug("Reading response from stream...");
+                var buffer = new byte[4096];
+                var offset = 0;
+                do
+                {
+                    var bytesRead = await stream.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset), cancellationToken).ConfigureAwait(false);
+                    offset += bytesRead;
+                }
+                while (stream.DataAvailable);
+
+                this.logger?.LogDebug("Received {byteCount} bytes.");
+
+                var responseData = buffer.Take(offset)
+                    .ToArray();
+
+                this.logger?.LogDebug("Decrypting response...");
+                var decryptedFrame = this.cryptoProvider.Decrypt(responseData);
+
+                this.logger?.LogDebug("Deserializing frame...");
+                var responseFrame = new RscpFrame(decryptedFrame);
+
+                return responseFrame;
             }
-            while (stream.DataAvailable);
-            this.logger?.LogDebug("Received {byteCount} bytes.");
-
-            var responeData = buffer.Take(offset).ToArray();
-
-            this.logger?.LogDebug("Decrypting response...");
-            var decryptedFrame = this.cryptoProvider.Decrypt(responeData);
-
-            this.logger?.LogDebug("Deserializing frame...");
-            var responseFrame = new RscpFrame(decryptedFrame);
-
-            return responseFrame;
+            finally
+            {
+                this.sendQueueSemaphore.Release();
+            }
         }
 
         /// <summary>
         /// Disconnects from the E3/DC power station.
         /// </summary>
+        /// <param name="cancellationToken">A token to provide a timeout for this class.</param>
         /// <exception cref="InvalidOperationException">Thrown if this instance is not connected to an E3/DC unit.</exception>
-        public void Disconnect()
+        /// <returns>A <see cref="Task"/> that completes once the disconnection was successful.</returns>
+        public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
+            lock (this.syncRoot)
+            {
+                this.logger?.LogTrace(".Disconnect()");
+
+                if (this.connectionState != ConnectionState.Connecting && this.connectionState != ConnectionState.Connected)
+                {
+                    this.logger?.LogWarning("Cannot disconnect from the E3/DC power station (State: {connectionState}).", this.connectionState);
+                    throw new InvalidOperationException("The instance is not connected to an E3/DC power station.");
+                }
+
+                this.connectionState = ConnectionState.Disconnecting;
+            }
+
+            this.logger?.LogDebug("Waiting for ongoing requests to complete...");
+            await this.sendQueueSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            this.logger?.LogDebug("No more requests waiting. Disconnecting...");
+            try
+            {
+                this.logger?.LogDebug("Closing TCP connection...");
+                this.tcpClient.Close();
+                this.tcpClient.Dispose();
+                this.logger?.LogDebug("TCP connection closed.");
+
+                this.logger?.LogInformation("Connection to E3/DC power station closed.");
+            }
+            finally
+            {
+                this.sendQueueSemaphore.Release();
+            }
+
+            this.connectionState = ConnectionState.Disconnected;
         }
 
         /// <inheritdoc cref="IDisposable.Dispose()"/>
-        public void Dispose()
+        public async void Dispose()
         {
             this.logger?.LogTrace(".Dispose()");
-            this.tcpClient?.Dispose();
+            await this.DisconnectAsync().ConfigureAwait(false);
         }
     }
 }

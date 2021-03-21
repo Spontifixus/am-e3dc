@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace AM.E3dc.Rscp
+namespace AM.E3dc.Rscp.Connectivity
 {
     /// <summary>
     /// This class wraps the standard <see cref="TcpClient"/> so it can be mocked
@@ -20,9 +20,6 @@ namespace AM.E3dc.Rscp
         {
             this.tcpClient = tcpClient;
         }
-
-        /// <inheritdoc cref="TcpClient.Connected"/>
-        public bool Connected => this.tcpClient.Connected;
 
         /// <inheritdoc cref="TcpClient.ConnectAsync(IPAddress, int)"/>
         public Task ConnectAsync(IPAddress address, int port) => this.tcpClient.ConnectAsync(address, port);
