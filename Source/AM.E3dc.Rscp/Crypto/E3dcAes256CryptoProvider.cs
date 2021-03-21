@@ -14,8 +14,8 @@ namespace AM.E3dc.Rscp.Crypto
     /// </summary>
     public class E3dcAes256CryptoProvider : ICryptoProvider
     {
-        private byte[] ivEncryption;
-        private byte[] ivDecryption;
+        private readonly byte[] ivEncryption = Enumerable.Repeat((byte)0xff, 32).ToArray();
+        private readonly byte[] ivDecryption = Enumerable.Repeat((byte)0xff, 32).ToArray();
         private byte[] key;
 
         /// <inheritdoc cref="ICryptoProvider"/>
@@ -29,9 +29,6 @@ namespace AM.E3dc.Rscp.Crypto
             var keyBytes = Enumerable.Repeat((byte)0xff, 32).ToArray();
             Encoding.ASCII.GetBytes(password).CopyTo(keyBytes, 0);
             this.key = keyBytes;
-
-            this.ivEncryption = Enumerable.Repeat((byte)0xff, 32).ToArray();
-            this.ivDecryption = Enumerable.Repeat((byte)0xff, 32).ToArray();
         }
 
         /// <inheritdoc cref="ICryptoProvider"/>

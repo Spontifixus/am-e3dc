@@ -126,10 +126,10 @@ namespace AM.E3dc.Rscp
             {
                 this.logger?.LogTrace(".SendFrameAsync(RscpFrame)");
 
-                this.logger.LogDebug("Serializing frame...");
+                this.logger?.LogDebug("Serializing frame...");
                 var frameData = frame.GetBytes();
 
-                this.logger.LogDebug("Encrypting frame...");
+                this.logger?.LogDebug("Encrypting frame...");
                 var encryptedFrame = this.cryptoProvider.Encrypt(frameData);
 
                 this.logger?.LogDebug("Writing {byteCount} bytes to the stream...", encryptedFrame.Length);
