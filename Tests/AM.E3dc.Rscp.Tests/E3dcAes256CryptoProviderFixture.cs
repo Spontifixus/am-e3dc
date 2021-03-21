@@ -1,9 +1,9 @@
 ﻿using System;
-using AM.E3dc.Rscp.Abstractions;
+using AM.E3dc.Rscp.Crypto;
 using FluentAssertions;
 using Xunit;
 
-namespace AM.E3dc.Rscp.Crypto.Tests
+namespace AM.E3dc.Rscp.Tests
 {
     public class E3dcAes256CryptoProviderFixture
     {

@@ -36,19 +36,49 @@ namespace AM.E3dc.Rscp.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="RscpFrame"/> class.
         /// </summary>
-        /// <param name="bytes">The raw bytes to construct the frame from.</param>
-        /// <exception cref="ArgumentNullException">Thrown if the a null value has been passed to this method.</exception>
-        /// <exception cref="ArgumentException">Thrown if the no bytes have been passed to the method.</exception>
-        internal RscpFrame(ReadOnlySpan<byte> bytes)
+        /// <param name="data">The raw bytes to construct the frame from.</param>
+        /// <exception cref="ArgumentNullException">Thrown if a null value has been passed to this method.</exception>
+        /// <exception cref="ArgumentException">Thrown if no bytes have been passed to the method, the bytes do not contain an RscpFrame, or the checksum is invalid.</exception>
+        internal RscpFrame(ReadOnlySpan<byte> data)
         {
-            if (bytes == null)
+            if (data == null)
             {
-                throw new ArgumentNullException(nameof(bytes));
+                throw new ArgumentNullException(nameof(data));
             }
 
-            if (bytes.IsEmpty)
+            if (data.IsEmpty)
             {
                 throw new ArgumentException("No bytes have been passed.");
+            }
+
+            if (!data.Slice(0, 2).SequenceEqual(MagicBytes))
+            {
+                throw new ArgumentException("Data does not contain an RscpFrame.");
+            }
+
+            // According to the E3/DC protocol documentation this should
+            // be rawData[2], but the documentation got that wrong...
+            this.HasChecksum = (data[3] & 0x10) == 0x10;
+            this.ProtocolVersion = (byte)(data[3] & 0x0F);
+
+            this.timestamp = MemoryMarshal.Read<RscpTimestamp>(data.Slice(4, 12));
+            this.Length = MemoryMarshal.Read<ushort>(data.Slice(16, 2));
+
+            if (this.HasChecksum && !Crc32Algorithm.IsValidWithCrcAtEnd(data.Slice(0, (ushort)(HeaderLength + this.Length + 4)).ToArray()))
+            {
+                throw new ArgumentException("Data checksum is invalid.");
+            }
+
+            if (this.Length > 0)
+            {
+                var offset = HeaderLength;
+                var expectedLength = HeaderLength + this.Length;
+                while (offset < expectedLength)
+                {
+                    var value = RscpValue.FromBytes(data[offset..]);
+                    this.values.Add(value.Tag, value);
+                    offset += value.TotalLength;
+                }
             }
         }
 
@@ -138,7 +168,7 @@ namespace AM.E3dc.Rscp.Data
         /// </summary>
         /// <param name="value">The value to be added.</param>
         /// <exception cref="ArgumentNullException">Thrown if no value was passed.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the frame is full already.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the frame is full already or a value with the same tag was added previously.</exception>
         public void Add(RscpValue value)
         {
             if (value == null)
@@ -149,6 +179,11 @@ namespace AM.E3dc.Rscp.Data
             if (this.Length + value.TotalLength > ushort.MaxValue)
             {
                 throw new InvalidOperationException("Can't put the value into this frame because then it would be too long.");
+            }
+
+            if (this.values.ContainsKey(value.Tag))
+            {
+                throw new InvalidOperationException("A value with this tag was added to the frame already.");
             }
 
             this.values.Add(value.Tag, value);

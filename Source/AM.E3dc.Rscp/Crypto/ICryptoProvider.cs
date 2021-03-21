@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AM.E3dc.Rscp.Abstractions
+namespace AM.E3dc.Rscp.Crypto
 {
     /// <summary>
     /// Interface description for crypto service providers.
