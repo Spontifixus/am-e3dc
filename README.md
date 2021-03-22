@@ -1,10 +1,14 @@
-# alphamarkus E3DC RSC<span>P.N</span>ET
+# am-e3dc
+
+![CI](https://img.shields.io/azure-devops/build/spontifixus/6b9c3bca-052c-4b57-9c3a-6e305515fc73/5) ![Tests](https://img.shields.io/azure-devops/tests/spontifixus/am-e3dc/5) ![Coverage](https://img.shields.io/azure-devops/coverage/spontifixus/am-e3dc/5) 
 
 This library enables you to access your [E3/DC S10 power station](https://www.e3dc.com/produkte) via the RSCP protocol.
 
 It targets .NET Standard 2.1 and can thus be used by all current .NET versions.
 
 ## Installation
+
+> **Note:** The nuget package was not released yet. But I am on it. Expect it in the coming days!
 
 You can add the library to your project's references using either the nuget package manager of visual studio or run the following command:
 
