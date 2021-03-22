@@ -1,0 +1,83 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  branches:
+    include:
+    - master
+
+pool:
+ vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 3.x
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- task: UseDotNet@2
+  displayName: 'Use .NET5 sdk'
+  inputs:
+    packageType: sdk
+    version: 5.x
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: build
+    projects: Source/**/*.csproj
+    arguments: -c $(buildConfiguration) /p:patchVersion=$(Build.BuildId) /p:versionSuffix=$(versionSuffix)
+    workingDirectory: /
+  displayName: 'Build'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: Tests/**/*.csproj
+    arguments: --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+    workingDirectory: /
+    nobuild: true
+  displayName: Run Unit Tests
+
+- script: |
+    dotnet tool install -g dotnet-reportgenerator-globaltool
+    reportgenerator -reports:Tests/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:Cobertura
+  displayName: Create reports
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish code coverage'
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
+
+- task: BuildQualityChecks@8
+  displayName: Check Build Warnings
+  inputs:
+    checkWarnings: true
+    warningFailOption: 'fixed'
+    warningThreshold: '0'
+    warningTaskFilters: '/^Build$/i'
+    warningFilters: '/\s([1-9]\d*\.?[0]*)\s+Warning\(s\)|\s([1-9]\d*\.?[0]*)\s+Error\(s\)/'
+
+- task: BuildQualityChecks@8
+  displayName: Check Line Coverage
+  inputs:
+    checkCoverage: true
+    coverageFailOption: 'fixed'
+    coverageType: 'lines'
+    coverageThreshold: '70'
+
+- task: BuildQualityChecks@8
+  displayName: Check Branch Coverage
+  inputs:
+    checkCoverage: true
+    coverageFailOption: 'fixed'
+    coverageType: 'branches'
+    coverageThreshold: '70'
