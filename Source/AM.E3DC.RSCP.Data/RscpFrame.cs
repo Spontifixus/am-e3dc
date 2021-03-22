@@ -155,6 +155,15 @@ namespace AM.E3dc.Rscp.Data
         }
 
         /// <summary>
+        /// Gets the values that are contained in this frame.
+        /// </summary>
+        /// <returns>A readonly collection of <see cref="RscpValue"/>.</returns>
+        public IReadOnlyList<RscpValue> GetValues()
+        {
+            return new ReadOnlyCollection<RscpValue>(this.values.Values.ToArray());
+        }
+
+        /// <summary>
         /// Gets the errors that are contained in this instance's values.
         /// </summary>
         /// <returns>An enumeration of RscpErrors.</returns>
