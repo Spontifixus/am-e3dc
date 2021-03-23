@@ -135,6 +135,12 @@ namespace AM.E3dc.Rscp.Data
         public bool HasError => this.values.Values.Any(rscpValue => rscpValue.DataType == RscpDataType.Error);
 
         /// <summary>
+        /// Gets the values that are contained in this frame.
+        /// </summary>
+        /// <value>A readonly collection of <see cref="RscpValue"/>.</value>
+        public IReadOnlyList<RscpValue> Values => new ReadOnlyCollection<RscpValue>(this.values.Values.ToArray());
+
+        /// <summary>
         /// Tries to receive the value with the specified tag and the specified value type from the frame.
         /// </summary>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -152,15 +158,6 @@ namespace AM.E3dc.Rscp.Data
 
             value = null;
             return false;
-        }
-
-        /// <summary>
-        /// Gets the values that are contained in this frame.
-        /// </summary>
-        /// <returns>A readonly collection of <see cref="RscpValue"/>.</returns>
-        public IReadOnlyList<RscpValue> GetValues()
-        {
-            return new ReadOnlyCollection<RscpValue>(this.values.Values.ToArray());
         }
 
         /// <summary>
