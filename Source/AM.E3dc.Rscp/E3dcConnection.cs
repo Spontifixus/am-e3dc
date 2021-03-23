@@ -29,7 +29,7 @@ namespace AM.E3dc.Rscp
         /// Initializes a new instance of the <see cref="E3dcConnection"/> class.
         /// </summary>
         /// <param name="logger">An instance of the logger.</param>
-        public E3dcConnection(ILogger<E3dcConnection> logger)
+        public E3dcConnection(ILogger<E3dcConnection> logger = null)
             : this(logger, new TcpClientWrapper(new TcpClient { NoDelay = true }), new E3dcAes256CryptoProvider())
         {
         }
