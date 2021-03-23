@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		LICENSE = LICENSE
+		README.md = README.md
 		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
@@ -29,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AM.E3dc.Rscp", "Source\AM.E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AM.E3dc.Rscp.Tests", "Tests\AM.E3dc.Rscp.Tests\AM.E3dc.Rscp.Tests.csproj", "{F819DFE7-84E1-4A77-9FF1-CF28382F0350}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AM.E3dc.Rscp.Example", "Source\AM.E3dc.Rscp.Example\AM.E3dc.Rscp.Example.csproj", "{33DB9492-4E34-4DE0-BB04-216A388D7848}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AM.E3dc.Rscp.Example", "Source\AM.E3dc.Rscp.Example\AM.E3dc.Rscp.Example.csproj", "{33DB9492-4E34-4DE0-BB04-216A388D7848}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
