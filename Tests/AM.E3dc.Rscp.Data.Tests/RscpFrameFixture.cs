@@ -171,7 +171,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.TryGetValue<RscpInt8>(RscpTag.TAG_RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
             retrievedValue2.Should().BeEquivalentTo(value2);
 
-            this.subject.GetValues().Should().BeEquivalentTo(value1, value2);
+            this.subject.Values.Should().BeEquivalentTo(value1, value2);
 
             this.subject.HasError.Should().BeFalse();
             this.subject.GetErrors().Should().BeEmpty();

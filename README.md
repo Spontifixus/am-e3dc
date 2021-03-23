@@ -91,7 +91,7 @@ var result = responseFrame.GetValue<RscpInt32>(RscpTag.TAG_BAT_CHARGE_CYCLES);
 In other cases, for example if you want to retrieve a list of error messages, you'd rather fetch all values:
 
 ```csharp
-var responseValues = responseFrame.GetValues();
+var responseValues = responseFrame.Values;
 ```
 
 You can access the value's value by means of the `Value` property. If the value is an `RscpContainer` that contains other values you need to use its `Children` property.
