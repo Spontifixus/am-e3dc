@@ -122,11 +122,11 @@ namespace AM.E3dc.Rscp.Data.Tests
         [Fact]
         public void CanAddAndRetrieveSingleValue()
         {
-            var value = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
+            var value = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
 
             this.subject.Add(value);
             this.subject.HasError.Should().BeFalse();
-            this.subject.TryGetValue<RscpInt8>(RscpTag.TAG_BAT_DATA, out var retrievedValue).Should().BeTrue();
+            this.subject.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue).Should().BeTrue();
             retrievedValue.Should().BeEquivalentTo(value);
 
             this.subject.HasError.Should().BeFalse();
@@ -157,18 +157,18 @@ namespace AM.E3dc.Rscp.Data.Tests
         [Fact]
         public void CanAddAndRetrieveMultipleValues()
         {
-            var value1 = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
-            var value2 = new RscpInt8(RscpTag.TAG_RSCP_AUTHENTICATION, 0x7F);
+            var value1 = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
+            var value2 = new RscpInt8(RscpTag.RSCP_AUTHENTICATION, 0x7F);
 
             this.subject.Add(value1);
             this.subject.Add(value2);
 
             this.subject.HasError.Should().BeFalse();
 
-            this.subject.TryGetValue<RscpInt8>(RscpTag.TAG_BAT_DATA, out var retrievedValue1).Should().BeTrue();
+            this.subject.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue1).Should().BeTrue();
             retrievedValue1.Should().BeEquivalentTo(value1);
 
-            this.subject.TryGetValue<RscpInt8>(RscpTag.TAG_RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
+            this.subject.TryGetValue<RscpInt8>(RscpTag.RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
             retrievedValue2.Should().BeEquivalentTo(value2);
 
             this.subject.Values.Should().BeEquivalentTo(value1, value2);
@@ -199,22 +199,50 @@ namespace AM.E3dc.Rscp.Data.Tests
         }
 
         [Fact]
-        public void AddThrowsExceptionIfTagWasAlreadyAdded()
+        public void CanAddAndRetrieveMultipleValuesWithTheSameTag()
         {
-            var value = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
+            var value1 = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
+            var value2 = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
 
-            this.subject.Add(value);
-            var action = new Action(() => this.subject.Add(value));
+            this.subject.Add(value1);
+            this.subject.Add(value2);
 
-            action.Should()
-                .Throw<InvalidOperationException>()
-                .WithMessage("A value with this tag was added to the frame already.");
+            this.subject.HasError.Should().BeFalse();
+
+            this.subject.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue1).Should().BeTrue();
+            retrievedValue1.Should().BeEquivalentTo(value1, value2);
+
+            this.subject.Values.Should().BeEquivalentTo(value1, value2);
+
+            this.subject.HasError.Should().BeFalse();
+            this.subject.GetErrors().Should().BeEmpty();
+
+            var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
+
+            // No need to write a fixed CRC into the result here,
+            // as we don't want to test the CrC32 algorithm.
+            Crc32Algorithm.ComputeAndWriteToEnd(expectedData);
+
+            // We need to initialize the timestamp explicitly
+            // for this test, because otherwise we'll need to
+            // calculate the date's bytes here, too, and I'd
+            // rather not do that.
+            var testTicks = DateTime.UnixEpoch.Ticks + (60 * TimeSpan.TicksPerSecond) + 2;
+            this.subject.Timestamp = new DateTime(testTicks);
+
+            // No need to write a fixed CRC into the result here,
+            // as we don't want to test the CrC32 algorithm.
+            Crc32Algorithm.ComputeAndWriteToEnd(expectedData);
+
+            var result = this.subject.GetBytes();
+
+            result.Should().BeEquivalentTo(expectedData);
         }
 
         [Fact]
         public void AddThrowsExceptionIfValueTooLarge()
         {
-            var value = new RscpByteArray(RscpTag.TAG_BAT_DATA, new byte[short.MaxValue]);
+            var value = new RscpByteArray(RscpTag.BAT_DATA, new byte[short.MaxValue]);
             this.subject.Add(value);
 
             var action = new Action(() => this.subject.Add(value));
@@ -237,13 +265,13 @@ namespace AM.E3dc.Rscp.Data.Tests
         [Fact]
         public void TryGetValueDoesNotThrowIfNotFound()
         {
-            var value = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
+            var value = new RscpBool(RscpTag.BAT_CURRENT, false);
             this.subject.Add(value);
 
             var action = new Action(() =>
             {
-                this.subject.TryGetValue<RscpBool>(RscpTag.TAG_BAT_CHARGE_CYCLES, out _);
-                this.subject.TryGetValue<RscpBitfield>(RscpTag.TAG_BAT_CURRENT, out _);
+                this.subject.TryGetValue<RscpBool>(RscpTag.BAT_CHARGE_CYCLES, out _);
+                this.subject.TryGetValue<RscpBitfield>(RscpTag.BAT_CURRENT, out _);
             });
 
             action.Should().NotThrow();
@@ -254,7 +282,7 @@ namespace AM.E3dc.Rscp.Data.Tests
         {
             var action = new Action(() =>
             {
-                this.subject.TryGetValue<RscpBool>(RscpTag.TAG_BAT_CHARGE_CYCLES, out _);
+                this.subject.TryGetValue<RscpBool>(RscpTag.BAT_CHARGE_CYCLES, out _);
             });
 
             action.Should().NotThrow();
@@ -263,26 +291,26 @@ namespace AM.E3dc.Rscp.Data.Tests
         [Fact]
         public void TryGetValueReturnsFalseIfTypeMismatch()
         {
-            var value = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
+            var value = new RscpBool(RscpTag.BAT_CURRENT, false);
             this.subject.Add(value);
 
-            this.subject.TryGetValue<RscpUInt16>(RscpTag.TAG_BAT_CURRENT, out _).Should().BeFalse();
+            this.subject.TryGetValue<RscpUInt16>(RscpTag.BAT_CURRENT, out _).Should().BeFalse();
         }
 
         [Fact]
         public void TryGetValueReturnsFalseIfTagMismatch()
         {
-            var value = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
+            var value = new RscpBool(RscpTag.BAT_CURRENT, false);
             this.subject.Add(value);
 
-            this.subject.TryGetValue<RscpBool>(RscpTag.TAG_BAT_CHARGE_CYCLES, out _).Should().BeFalse();
+            this.subject.TryGetValue<RscpBool>(RscpTag.BAT_CHARGE_CYCLES, out _).Should().BeFalse();
         }
 
         [Fact]
         public void CanDetectAndGetErrorValue()
         {
-            var value1 = new RscpBool(RscpTag.TAG_BAT_CURRENT, false);
-            var value2 = new RscpError(RscpTag.TAG_BAT_CHARGE_CYCLES, RscpErrorCode.Again);
+            var value1 = new RscpBool(RscpTag.BAT_CURRENT, false);
+            var value2 = new RscpError(RscpTag.BAT_CHARGE_CYCLES, RscpErrorCode.Again);
 
             this.subject.Add(value1);
             this.subject.Add(value2);
@@ -298,8 +326,8 @@ namespace AM.E3dc.Rscp.Data.Tests
             var rawData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
             Crc32Algorithm.ComputeAndWriteToEnd(rawData);
 
-            var expectedValue1 = new RscpInt8(RscpTag.TAG_BAT_DATA, 0x7F);
-            var expectedValue2 = new RscpInt8(RscpTag.TAG_RSCP_AUTHENTICATION, 0x7F);
+            var expectedValue1 = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
+            var expectedValue2 = new RscpInt8(RscpTag.RSCP_AUTHENTICATION, 0x7F);
 
             var frame = new RscpFrame(rawData);
 
@@ -307,10 +335,10 @@ namespace AM.E3dc.Rscp.Data.Tests
             frame.HasChecksum.Should().BeTrue();
             frame.Timestamp.Ticks.Should().Be(DateTime.UnixEpoch.Ticks + (60 * TimeSpan.TicksPerSecond) + 2);
 
-            frame.TryGetValue<RscpInt8>(RscpTag.TAG_BAT_DATA, out var retrievedValue1).Should().BeTrue();
+            frame.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue1).Should().BeTrue();
             retrievedValue1.Should().BeEquivalentTo(expectedValue1);
 
-            frame.TryGetValue<RscpInt8>(RscpTag.TAG_RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
+            frame.TryGetValue<RscpInt8>(RscpTag.RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
             retrievedValue2.Should().BeEquivalentTo(expectedValue2);
         }
 
