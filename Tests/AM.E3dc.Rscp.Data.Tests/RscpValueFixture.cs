@@ -330,6 +330,19 @@ namespace AM.E3dc.Rscp.Data.Tests
         }
 
         [Fact]
+        public void CanHandleEmptyRscpContainer()
+        {
+            var rscpContainer = new RscpContainer(Tag);
+            rscpContainer.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, 0);
+            rscpContainer.Children.Should().BeEmpty();
+
+            var deserialized = rscpContainer.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, 0);
+            ((RscpContainer)deserialized).Should().BeEquivalentTo(rscpContainer);
+        }
+
+        [Fact]
         public void RscpContainerThrowsExceptionOnCircularReference()
         {
             var rscpContainer = new RscpContainer(Tag);
