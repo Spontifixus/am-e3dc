@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AM.E3dc.Rscp.Data;
@@ -40,16 +41,21 @@ namespace AM.E3dc.Rscp.Example
 
             logger.LogInformation("Starting authorization for user '{userName}'...", e3dcUserName);
             var authFrame = new RscpFrame();
-            var authContainer = new RscpContainer(RscpTag.TAG_RSCP_REQ_AUTHENTICATION);
-            authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_USER, e3dcUserName));
-            authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_PASSWORD, e3dcPassword));
+            var authContainer = new RscpContainer(RscpTag.RSCP_REQ_AUTHENTICATION);
+            authContainer.Add(new RscpString(RscpTag.RSCP_AUTHENTICATION_USER, e3dcUserName));
+            authContainer.Add(new RscpString(RscpTag.RSCP_AUTHENTICATION_PASSWORD, e3dcPassword));
             authFrame.Add(authContainer);
 
             var response = await e3dcConnection.SendAsync(authFrame);
-            response.TryGetValue<RscpUInt8>(RscpTag.TAG_RSCP_AUTHENTICATION, out var authResponse);
-
-            var userLevel = (RscpUserLevel)authResponse.Value;
-            logger.LogInformation("Authorization of '{userName}' successful (UserLevel: {userLevel}).", e3dcUserName, userLevel);
+            if (response.TryGetValue<RscpUInt8>(RscpTag.RSCP_AUTHENTICATION, out var authResponseValues))
+            {
+                var userLevel = (RscpUserLevel)authResponseValues.First().Value;
+                logger.LogInformation("Authorization of '{userName}' successful (UserLevel: {userLevel}).", e3dcUserName, userLevel);
+            }
+            else
+            {
+                logger.LogWarning("Authorization of '{userName}' failed.", e3dcUserName);
+            }
 
             Console.ReadLine();
         }

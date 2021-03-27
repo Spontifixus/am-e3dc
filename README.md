@@ -36,16 +36,16 @@ await e3dcConnection.ConnectAsync(endpoint, rscpPassword);
 
 // Build the authorization frame
 var authFrame = new RscpFrame();
-var authContainer = new RscpContainer(RscpTag.TAG_RSCP_REQ_AUTHENTICATION);
-authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_USER, e3dcUserName));
-authContainer.Add(new RscpString(RscpTag.TAG_RSCP_AUTHENTICATION_PASSWORD, e3dcPassword));
+var authContainer = new RscpContainer(RscpTag.RSCP_REQ_AUTHENTICATION);
+authContainer.Add(new RscpString(RscpTag.RSCP_AUTHENTICATION_USER, e3dcUserName));
+authContainer.Add(new RscpString(RscpTag.RSCP_AUTHENTICATION_PASSWORD, e3dcPassword));
 authFrame.Add(authContainer);
 
 // Send the frame to the power station and await the response
 var response = await e3dcConnection.SendAsync(authFrame);
-response.TryGetValue<RscpUInt8>(RscpTag.TAG_RSCP_AUTHENTICATION, out var authResponse);
+response.TryGetValue<RscpUInt8>(RscpTag.RSCP_AUTHENTICATION, out var authResponseValues);
 
-var userLevel = (RscpUserLevel)authResponse.Value;
+var userLevel = (RscpUserLevel)authResponseValues.First().Value;
 ```
 
 ### Logging
@@ -80,11 +80,13 @@ To add a value to a frame use the `Add` method of the `RscpFrame` class. Contain
 
 ### Reading values
 
-To access a value from the power station's response you can either address the value by both its tag and its type:
+To access a value from the power station's response you can either address the values by both their tag and their type:
 
 ```csharp
-var result = responseFrame.GetValue<RscpInt32>(RscpTag.TAG_BAT_CHARGE_CYCLES);
+var result = responseFrame.GetValue<RscpInt32>(RscpTag.BAT_CHARGE_CYCLES);
 ```
+
+This will yield a list of values fitting the given criteria.
 
 > **Note:** Sometimes the RSCP protocol acts weird. While the response to a successful authorization attempt is an `RscpUInt8` value, it returns an `RscpUInt32` if the authorization failed...
 
@@ -131,4 +133,6 @@ This library is licensed under the [Apache License Version 2.0](LICENSE). I'd be
 
 Thanks to [@bvotteler](https://github.com/bvotteler/), who created [rscp-e3dc](https://github.com/bvotteler/rscp-e3dc), a Java implementation of the RSCP protocol. His code helped me remove the last bugs from my encryption implementation.
 
-Why "alphamarkus"? I thought this account was named "Spontifixus"? You're right. But alphamarkus.de was what I named my first website - and I still go with this name for software projects.
+Thanks also to [@rxhan](https://github.com/rxhan), who created [RSCPGui](https://github.com/rxhan/RSCPGui), a pretty cool application if you want to know what's going on in your E3/DC power station. Their code helped me a lot to understand how the RSCP protocol actually works. Also their application provides a much more complete RSCP tag list than the official documentation! 
+
+Why "*am*-e3dc"? I thought this account was named "Spontifixus"? You're right. But alphamarkus.de was what I named my first website - and I still go with this name (or "am" for short) for software projects.

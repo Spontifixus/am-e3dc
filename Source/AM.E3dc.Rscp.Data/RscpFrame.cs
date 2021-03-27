@@ -18,7 +18,7 @@ namespace AM.E3dc.Rscp.Data
 
         private static readonly byte[] MagicBytes = { 0xE3, 0xDC };
 
-        private readonly Dictionary<RscpTag, RscpValue> values = new Dictionary<RscpTag, RscpValue>();
+        private readonly List<RscpValue> values = new List<RscpValue>();
 
         private byte protocolVersion;
         private RscpTimestamp timestamp;
@@ -76,7 +76,7 @@ namespace AM.E3dc.Rscp.Data
                 while (offset < expectedLength)
                 {
                     var value = RscpValue.FromBytes(data[offset..]);
-                    this.values.Add(value.Tag, value);
+                    this.values.Add(value);
                     offset += value.TotalLength;
                 }
             }
@@ -132,13 +132,13 @@ namespace AM.E3dc.Rscp.Data
         /// Gets a value indicating whether an error was returned from the E3/DC unit.
         /// </summary>
         /// <value><c>true</c> if an error was returned; <c>false</c> otherwise.</value>
-        public bool HasError => this.values.Values.Any(rscpValue => rscpValue.DataType == RscpDataType.Error);
+        public bool HasError => this.values.Any(rscpValue => rscpValue.DataType == RscpDataType.Error);
 
         /// <summary>
         /// Gets the values that are contained in this frame.
         /// </summary>
         /// <value>A readonly collection of <see cref="RscpValue"/>.</value>
-        public IReadOnlyList<RscpValue> Values => new ReadOnlyCollection<RscpValue>(this.values.Values.ToArray());
+        public IReadOnlyList<RscpValue> Values => new ReadOnlyCollection<RscpValue>(this.values.ToArray());
 
         /// <summary>
         /// Tries to receive the value with the specified tag and the specified value type from the frame.
@@ -147,12 +147,16 @@ namespace AM.E3dc.Rscp.Data
         /// <param name="tag">The tag to be returned.</param>
         /// <param name="value">The value that was found.</param>
         /// <returns><c>true</c> if the value was found; <c>false</c> otherwise.</returns>
-        public bool TryGetValue<TValue>(RscpTag tag, out TValue value)
+        public bool TryGetValue<TValue>(RscpTag tag, out IReadOnlyList<TValue> value)
         where TValue : RscpValue
         {
-            if (this.values.ContainsKey(tag) && this.values[tag] is TValue typedValue)
+            var foundValues = this.values
+                .OfType<TValue>()
+                .Where(v => v.Tag == tag)
+                .ToList();
+            if (foundValues.Count > 0)
             {
-                value = typedValue;
+                value = foundValues;
                 return true;
             }
 
@@ -166,7 +170,7 @@ namespace AM.E3dc.Rscp.Data
         /// <returns>An enumeration of RscpErrors.</returns>
         public IReadOnlyList<RscpError> GetErrors()
         {
-            return new ReadOnlyCollection<RscpError>(this.values.Values.OfType<RscpError>().ToArray());
+            return new ReadOnlyCollection<RscpError>(this.values.OfType<RscpError>().ToList());
         }
 
         /// <summary>
@@ -174,7 +178,7 @@ namespace AM.E3dc.Rscp.Data
         /// </summary>
         /// <param name="value">The value to be added.</param>
         /// <exception cref="ArgumentNullException">Thrown if no value was passed.</exception>
-        /// <exception cref="InvalidOperationException">Thrown if the frame is full already or a value with the same tag was added previously.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if the frame is full already.</exception>
         public void Add(RscpValue value)
         {
             if (value == null)
@@ -187,12 +191,7 @@ namespace AM.E3dc.Rscp.Data
                 throw new InvalidOperationException("Can't put the value into this frame because then it would be too long.");
             }
 
-            if (this.values.ContainsKey(value.Tag))
-            {
-                throw new InvalidOperationException("A value with this tag was added to the frame already.");
-            }
-
-            this.values.Add(value.Tag, value);
+            this.values.Add(value);
             this.Length += value.TotalLength;
         }
 
@@ -233,7 +232,7 @@ namespace AM.E3dc.Rscp.Data
             MemoryMarshal.Write(rawData.Slice(16, 2), ref length);
 
             var offset = HeaderLength;
-            foreach (var rscpValue in this.values.Values)
+            foreach (var rscpValue in this.values)
             {
                 rscpValue.WriteTo(rawData.Slice(offset, rscpValue.TotalLength));
                 offset += rscpValue.TotalLength;

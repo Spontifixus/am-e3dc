@@ -7,7 +7,7 @@ namespace AM.E3dc.Rscp.Data.Tests
 {
     public class RscpValueFixture
     {
-        private const RscpTag Tag = RscpTag.TAG_BAT_CHARGE_CYCLES;
+        private const RscpTag Tag = RscpTag.BAT_CHARGE_CYCLES;
 
         [Fact]
         public void FromBytesThrowsExceptionOnInvalidDataType()
