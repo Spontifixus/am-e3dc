@@ -14,7 +14,7 @@ namespace AM.E3dc.Rscp.Data.Values
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="value">The value of the object.</param>
         public RscpError(RscpTag tag, RscpErrorCode value)
-        : base(tag, 1, value)
+        : base(tag, 4, value)
         {
         }
 
@@ -24,7 +24,7 @@ namespace AM.E3dc.Rscp.Data.Values
         /// <param name="tag">The tag of the value object.</param>
         /// <param name="data">The span containing the value of this object.</param>
         internal RscpError(RscpTag tag, ReadOnlySpan<byte> data)
-            : base(tag, 1, MemoryMarshal.Read<RscpErrorCode>(data))
+            : base(tag, 4, MemoryMarshal.Read<RscpErrorCode>(data))
         {
         }
 
