@@ -28,7 +28,10 @@ namespace AM.E3dc.Rscp.Data.Values
         internal RscpContainer(RscpTag tag, ReadOnlySpan<byte> data)
             : base(tag, 0)
         {
-            this.InitializeFromBytes(data);
+            if (data.Length > 0)
+            {
+                this.InitializeFromBytes(data);
+            }
         }
 
         /// <inheritdoc />
