@@ -295,12 +295,12 @@ namespace AM.E3dc.Rscp.Data.Tests
         public void CanHandleRscpError()
         {
             var rscpValue = new RscpError(Tag, RscpErrorCode.AccessDenied);
-            rscpValue.AssertHeader<RscpError>(Tag, RscpDataType.Error, 1);
+            rscpValue.AssertHeader<RscpError>(Tag, RscpDataType.Error, 4);
             rscpValue.Value.Should().BeEquivalentTo(RscpErrorCode.AccessDenied);
 
             var deserialized = rscpValue.SerializeAndDeserialize();
 
-            deserialized.AssertHeader<RscpError>(Tag, RscpDataType.Error, 1);
+            deserialized.AssertHeader<RscpError>(Tag, RscpDataType.Error, 4);
             ((RscpError)deserialized).Value.Should().BeEquivalentTo(RscpErrorCode.AccessDenied);
         }
 
