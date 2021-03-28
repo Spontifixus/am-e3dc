@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -144,19 +144,25 @@ namespace AM.E3dc.Rscp
                 }
 
                 this.logger?.LogDebug("Reading response from stream...");
-                var buffer = new byte[4096];
-                var offset = 0;
-                do
+                byte[] receivedData;
+                int receivedDataLength = 0;
+                await using (var memoryStream = new MemoryStream())
                 {
-                    var bytesRead = await stream.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset), cancellationToken).ConfigureAwait(false);
-                    offset += bytesRead;
+                    do
+                    {
+                        var buffer = new byte[1024];
+                        var bytesRead = await stream.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
+                        receivedDataLength += bytesRead;
+                        await memoryStream.WriteAsync(buffer);
+                    }
+                    while (stream.DataAvailable);
+
+                    receivedData = memoryStream.ToArray();
                 }
-                while (stream.DataAvailable);
 
                 this.logger?.LogDebug("Received {byteCount} bytes.");
 
-                var responseData = buffer.Take(offset)
-                    .ToArray();
+                var responseData = receivedData[..receivedDataLength];
 
                 this.logger?.LogDebug("Decrypting response...");
                 var decryptedFrame = this.cryptoProvider.Decrypt(responseData);
