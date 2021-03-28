@@ -1,6 +1,7 @@
 ﻿using System;
 using AM.E3dc.Rscp.Data.Values;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using Xunit;
 
 namespace AM.E3dc.Rscp.Data.Tests
@@ -230,17 +231,30 @@ namespace AM.E3dc.Rscp.Data.Tests
         }
 
         [Fact]
-        public void CanHandleRscpTime()
+        public void CanHandleRscpTimeWithDateTime()
         {
             var now = DateTime.Now;
             var rscpValue = new RscpTime(Tag, now);
             rscpValue.AssertHeader<RscpTime>(Tag, RscpDataType.Timestamp, 12);
-            rscpValue.Value.Should().Be(now);
+            rscpValue.DateTime.Should().Be(now);
 
             var deserialized = rscpValue.SerializeAndDeserialize();
 
             deserialized.AssertHeader<RscpTime>(Tag, RscpDataType.Timestamp, 12);
-            ((RscpTime)deserialized).Value.Should().Be(now);
+            ((RscpTime)deserialized).DateTime.Should().Be(now);
+        }
+
+        [Fact]
+        public void CanHandleRscpTimeWithTimeSpan()
+        {
+            var rscpValue = new RscpTime(Tag, 2.Minutes());
+            rscpValue.AssertHeader<RscpTime>(Tag, RscpDataType.Timestamp, 12);
+            rscpValue.TimeSpan.Should().Be(2.Minutes());
+
+            var deserialized = rscpValue.SerializeAndDeserialize();
+
+            deserialized.AssertHeader<RscpTime>(Tag, RscpDataType.Timestamp, 12);
+            ((RscpTime)deserialized).TimeSpan.Should().Be(2.Minutes());
         }
 
         [Fact]
