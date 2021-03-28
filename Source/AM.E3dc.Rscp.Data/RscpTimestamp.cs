@@ -14,14 +14,23 @@ namespace AM.E3dc.Rscp.Data
     public readonly struct RscpTimestamp
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="RscpTimestamp"/> class.
+        /// </summary>
+        /// <param name="timespan">The time that has passed since the unix-epoch (1.1.1970).</param>
+        public RscpTimestamp(TimeSpan timespan)
+        {
+            var ticks = timespan.Ticks;
+            this.Seconds = ticks / TimeSpan.TicksPerSecond;
+            this.Nanoseconds = (int)(ticks % TimeSpan.TicksPerSecond) * 100;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RscpTimestamp"/> struct.
         /// </summary>
         /// <param name="timestamp">The timestamp that is to be represented by this instance.</param>
         public RscpTimestamp(DateTime timestamp)
+            : this(timestamp.Subtract(DateTime.UnixEpoch))
         {
-            var unixTimestamp = timestamp.Ticks - new DateTime(1970, 1, 1).Ticks;
-            this.Seconds = unixTimestamp / TimeSpan.TicksPerSecond;
-            this.Nanoseconds = (int)(unixTimestamp % TimeSpan.TicksPerSecond) * 100;
         }
 
         /// <summary>
@@ -41,13 +50,22 @@ namespace AM.E3dc.Rscp.Data
         public int Nanoseconds { get; }
 
         /// <summary>
-        /// Creates a nes instance of <see cref="DateTime"/> from this instance.
+        /// Creates a new instance of <see cref="DateTime"/> from this instance.
         /// </summary>
         /// <returns>A <see cref="DateTime"/> instance representing this timestamp.</returns>
         public DateTime ToDateTime()
         {
-            var ticks = DateTime.UnixEpoch.Ticks + (this.Seconds * TimeSpan.TicksPerSecond) + (this.Nanoseconds / 100);
-            return new DateTime(ticks);
+            return DateTime.UnixEpoch.Add(this.ToTimeSpan());
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="TimeSpan"/> from this instance.
+        /// </summary>
+        /// <returns>A <see cref="TimeSpan"/> representing the time that has passed since the unix epoch (1.1.1970).</returns>
+        public TimeSpan ToTimeSpan()
+        {
+            var ticks = (this.Seconds * TimeSpan.TicksPerSecond) + (this.Nanoseconds / 100);
+            return TimeSpan.FromTicks(ticks);
         }
     }
 }

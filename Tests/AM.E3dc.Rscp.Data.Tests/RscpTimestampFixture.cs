@@ -10,13 +10,23 @@ namespace AM.E3dc.Rscp.Data.Tests
         private readonly DateTime now = DateTime.Now;
 
         [Fact]
-        public void CanCreateRscpTime()
+        public void CanCreateRscpTimestampFromDateTime()
         {
             var subject = new RscpTimestamp(this.now);
 
             subject.ToDateTime()
                 .Should()
                 .Be(this.now);
+        }
+
+        [Fact]
+        public void CanCreateRscpTimestampFromTimeSpan()
+        {
+            var subject = new RscpTimestamp(TimeSpan.FromSeconds(2));
+
+            subject.ToTimeSpan()
+                .Should()
+                .Be(TimeSpan.FromSeconds(2));
         }
 
         [Fact]
