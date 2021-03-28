@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AM.E3dc.Rscp.Data;
@@ -47,9 +46,9 @@ namespace AM.E3dc.Rscp.Example
             authFrame.Add(authContainer);
 
             var response = await e3dcConnection.SendAsync(authFrame);
-            if (response.TryGetValue<RscpUInt8>(RscpTag.RSCP_AUTHENTICATION, out var authResponseValues))
+            if (response.Values[0] is RscpUInt8 userLevelValue)
             {
-                var userLevel = (RscpUserLevel)authResponseValues.First().Value;
+                var userLevel = (RscpUserLevel)userLevelValue.Value;
                 logger.LogInformation("Authorization of '{userName}' successful (UserLevel: {userLevel}).", e3dcUserName, userLevel);
             }
             else

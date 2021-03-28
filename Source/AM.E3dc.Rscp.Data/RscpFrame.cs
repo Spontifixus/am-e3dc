@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.InteropServices;
 using AM.E3dc.Rscp.Data.Values;
 using Force.Crc32;
@@ -129,49 +128,10 @@ namespace AM.E3dc.Rscp.Data
         public ushort Length { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether an error was returned from the E3/DC unit.
-        /// </summary>
-        /// <value><c>true</c> if an error was returned; <c>false</c> otherwise.</value>
-        public bool HasError => this.values.Any(rscpValue => rscpValue.DataType == RscpDataType.Error);
-
-        /// <summary>
         /// Gets the values that are contained in this frame.
         /// </summary>
         /// <value>A readonly collection of <see cref="RscpValue"/>.</value>
-        public IReadOnlyList<RscpValue> Values => new ReadOnlyCollection<RscpValue>(this.values.ToArray());
-
-        /// <summary>
-        /// Tries to receive the value with the specified tag and the specified value type from the frame.
-        /// </summary>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
-        /// <param name="tag">The tag to be returned.</param>
-        /// <param name="value">The value that was found.</param>
-        /// <returns><c>true</c> if the value was found; <c>false</c> otherwise.</returns>
-        public bool TryGetValue<TValue>(RscpTag tag, out IReadOnlyList<TValue> value)
-        where TValue : RscpValue
-        {
-            var foundValues = this.values
-                .OfType<TValue>()
-                .Where(v => v.Tag == tag)
-                .ToList();
-            if (foundValues.Count > 0)
-            {
-                value = foundValues;
-                return true;
-            }
-
-            value = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the errors that are contained in this instance's values.
-        /// </summary>
-        /// <returns>An enumeration of RscpErrors.</returns>
-        public IReadOnlyList<RscpError> GetErrors()
-        {
-            return new ReadOnlyCollection<RscpError>(this.values.OfType<RscpError>().ToList());
-        }
+        public IReadOnlyList<RscpValue> Values => new ReadOnlyCollection<RscpValue>(this.values);
 
         /// <summary>
         /// Adds a value to the frame.

@@ -26,8 +26,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(0);
             this.subject.Timestamp.Should().BeCloseTo(this.now);
-            this.subject.HasError.Should().BeFalse();
-            this.subject.GetErrors().Should().BeEmpty();
+            this.subject.Values.Should().BeEmpty();
         }
 
         [Theory]
@@ -125,12 +124,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             var value = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
 
             this.subject.Add(value);
-            this.subject.HasError.Should().BeFalse();
-            this.subject.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue).Should().BeTrue();
-            retrievedValue.Should().BeEquivalentTo(value);
-
-            this.subject.HasError.Should().BeFalse();
-            this.subject.GetErrors().Should().BeEmpty();
+            this.subject.Values.Should().BeEquivalentTo(value);
 
             var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
 
@@ -163,18 +157,10 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.Add(value1);
             this.subject.Add(value2);
 
-            this.subject.HasError.Should().BeFalse();
-
-            this.subject.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue1).Should().BeTrue();
-            retrievedValue1.Should().BeEquivalentTo(value1);
-
-            this.subject.TryGetValue<RscpInt8>(RscpTag.RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
-            retrievedValue2.Should().BeEquivalentTo(value2);
+            this.subject.Values[0].Should().BeEquivalentTo(value1);
+            this.subject.Values[1].Should().BeEquivalentTo(value2);
 
             this.subject.Values.Should().BeEquivalentTo(value1, value2);
-
-            this.subject.HasError.Should().BeFalse();
-            this.subject.GetErrors().Should().BeEmpty();
 
             var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
 
@@ -202,22 +188,14 @@ namespace AM.E3dc.Rscp.Data.Tests
         public void CanAddAndRetrieveMultipleValuesWithTheSameTag()
         {
             var value1 = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
-            var value2 = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
+            var value2 = new RscpInt8(RscpTag.BAT_DATA, 0x0F);
 
             this.subject.Add(value1);
             this.subject.Add(value2);
 
-            this.subject.HasError.Should().BeFalse();
-
-            this.subject.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue1).Should().BeTrue();
-            retrievedValue1.Should().BeEquivalentTo(value1, value2);
-
             this.subject.Values.Should().BeEquivalentTo(value1, value2);
 
-            this.subject.HasError.Should().BeFalse();
-            this.subject.GetErrors().Should().BeEmpty();
-
-            var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
+            var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00 };
 
             // No need to write a fixed CRC into the result here,
             // as we don't want to test the CrC32 algorithm.
@@ -263,64 +241,6 @@ namespace AM.E3dc.Rscp.Data.Tests
         }
 
         [Fact]
-        public void TryGetValueDoesNotThrowIfNotFound()
-        {
-            var value = new RscpBool(RscpTag.BAT_CURRENT, false);
-            this.subject.Add(value);
-
-            var action = new Action(() =>
-            {
-                this.subject.TryGetValue<RscpBool>(RscpTag.BAT_CHARGE_CYCLES, out _);
-                this.subject.TryGetValue<RscpBitfield>(RscpTag.BAT_CURRENT, out _);
-            });
-
-            action.Should().NotThrow();
-        }
-
-        [Fact]
-        public void TryGetValueDoesNotThrowIfEmpty()
-        {
-            var action = new Action(() =>
-            {
-                this.subject.TryGetValue<RscpBool>(RscpTag.BAT_CHARGE_CYCLES, out _);
-            });
-
-            action.Should().NotThrow();
-        }
-
-        [Fact]
-        public void TryGetValueReturnsFalseIfTypeMismatch()
-        {
-            var value = new RscpBool(RscpTag.BAT_CURRENT, false);
-            this.subject.Add(value);
-
-            this.subject.TryGetValue<RscpUInt16>(RscpTag.BAT_CURRENT, out _).Should().BeFalse();
-        }
-
-        [Fact]
-        public void TryGetValueReturnsFalseIfTagMismatch()
-        {
-            var value = new RscpBool(RscpTag.BAT_CURRENT, false);
-            this.subject.Add(value);
-
-            this.subject.TryGetValue<RscpBool>(RscpTag.BAT_CHARGE_CYCLES, out _).Should().BeFalse();
-        }
-
-        [Fact]
-        public void CanDetectAndGetErrorValue()
-        {
-            var value1 = new RscpBool(RscpTag.BAT_CURRENT, false);
-            var value2 = new RscpError(RscpTag.BAT_CHARGE_CYCLES, RscpErrorCode.Again);
-
-            this.subject.Add(value1);
-            this.subject.Add(value2);
-
-            this.subject.HasError.Should().BeTrue();
-            this.subject.GetErrors().Should().NotBeNullOrEmpty();
-            this.subject.GetErrors()[0].Should().BeEquivalentTo(value2);
-        }
-
-        [Fact]
         public void CanReadFrameFromBytes()
         {
             var rawData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
@@ -335,11 +255,8 @@ namespace AM.E3dc.Rscp.Data.Tests
             frame.HasChecksum.Should().BeTrue();
             frame.Timestamp.Ticks.Should().Be(DateTime.UnixEpoch.Ticks + (60 * TimeSpan.TicksPerSecond) + 2);
 
-            frame.TryGetValue<RscpInt8>(RscpTag.BAT_DATA, out var retrievedValue1).Should().BeTrue();
-            retrievedValue1.Should().BeEquivalentTo(expectedValue1);
-
-            frame.TryGetValue<RscpInt8>(RscpTag.RSCP_AUTHENTICATION, out var retrievedValue2).Should().BeTrue();
-            retrievedValue2.Should().BeEquivalentTo(expectedValue2);
+            frame.Values[0].Should().BeEquivalentTo(expectedValue1);
+            frame.Values[1].Should().BeEquivalentTo(expectedValue2);
         }
 
         [Fact]
