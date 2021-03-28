@@ -43,9 +43,15 @@ authFrame.Add(authContainer);
 
 // Send the frame to the power station and await the response
 var response = await e3dcConnection.SendAsync(authFrame);
-response.TryGetValue<RscpUInt8>(RscpTag.RSCP_AUTHENTICATION, out var authResponseValues);
-
-var userLevel = (RscpUserLevel)authResponseValues.First().Value;
+if (response.Values[0] is RscpUInt8 userLevelValue)
+{
+    var userLevel = (RscpUserLevel)userLevelValue.Value;
+    Console.WriteLine($"Authorization of '{e3dcUserName}' successful (UserLevel: {userLevel}).");
+}
+else
+{
+    Console.WriteLine("Authorization of '{e3dcUserName}' failed.");
+}
 ```
 
 ### Logging
