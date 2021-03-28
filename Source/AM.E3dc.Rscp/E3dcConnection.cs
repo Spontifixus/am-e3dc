@@ -153,7 +153,7 @@ namespace AM.E3dc.Rscp
                         var buffer = new byte[1024];
                         var bytesRead = await stream.ReadAsync(buffer.AsMemory(), cancellationToken).ConfigureAwait(false);
                         receivedDataLength += bytesRead;
-                        await memoryStream.WriteAsync(buffer);
+                        await memoryStream.WriteAsync(buffer, cancellationToken);
                     }
                     while (stream.DataAvailable);
 
