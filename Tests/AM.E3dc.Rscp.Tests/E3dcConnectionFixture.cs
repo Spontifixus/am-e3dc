@@ -63,6 +63,10 @@ namespace AM.E3dc.Rscp.Tests
             await this.subject.DisconnectAsync();
 
             _ = this.networkSteam.Received(2).DataAvailable;
+
+            // ReSharper disable once AsyncVoidLambda
+            // OK here, because there's no async method available.
+            // Also, we don't throw an exception here.
             Received.InOrder(
                 async () =>
                 {
@@ -115,6 +119,10 @@ namespace AM.E3dc.Rscp.Tests
             await this.subject.DisconnectAsync();
 
             _ = this.networkSteam.Received(6).DataAvailable;
+
+            // ReSharper disable once AsyncVoidLambda
+            // OK here, because there's no async method available.
+            // Also, we don't throw an exception here.
             Received.InOrder(
                 async () =>
                 {
@@ -192,6 +200,10 @@ namespace AM.E3dc.Rscp.Tests
             await this.subject.DisconnectAsync();
 
             _ = this.networkSteam.Received(6).DataAvailable;
+
+            // ReSharper disable once AsyncVoidLambda
+            // OK here, because there's no async method available.
+            // Also, we don't throw an exception here.
             Received.InOrder(
                 async () =>
                 {
