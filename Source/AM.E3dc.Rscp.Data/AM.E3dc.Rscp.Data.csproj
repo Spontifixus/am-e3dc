@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Company></Company>
     <Product>am-e3dc</Product>
     <PackageId>AM.E3dc.Rscp.Data</PackageId>
-    <Copyright>Copyright (c) 2021 Markus Rehrs</Copyright>
+    <Copyright>Copyright (c) 2022 Markus Rehrs</Copyright>
     <PackageLicenseFile></PackageLicenseFile>
     <PackageTags>E3DC;RSCP;.NET</PackageTags>
     <PackageProjectUrl>https://github.com/Spontifixus/am-e3dc</PackageProjectUrl>
