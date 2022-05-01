@@ -25,7 +25,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(0);
-            this.subject.Timestamp.Should().BeCloseTo(this.now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now, precision: TimeSpan.Zero);
             this.subject.Values.Should().BeEmpty();
         }
 
@@ -42,7 +42,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(protocolVersion);
             this.subject.Length.Should().Be(0);
-            this.subject.Timestamp.Should().BeCloseTo(this.now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now, precision: TimeSpan.Zero);
         }
 
         [Theory]
@@ -62,7 +62,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(0);
-            this.subject.Timestamp.Should().BeCloseTo(this.now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now, precision: TimeSpan.Zero);
         }
 
         [Fact]
@@ -73,14 +73,14 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.HasChecksum.Should().BeFalse();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(0);
-            this.subject.Timestamp.Should().BeCloseTo(this.now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now, precision: TimeSpan.Zero);
 
             this.subject.HasChecksum = true;
 
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(0);
-            this.subject.Timestamp.Should().BeCloseTo(this.now);
+            this.subject.Timestamp.Should().BeCloseTo(this.now, precision: TimeSpan.Zero);
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.HasChecksum.Should().BeTrue();
             this.subject.ProtocolVersion.Should().Be(1);
             this.subject.Length.Should().Be(0);
-            this.subject.Timestamp.Should().BeCloseTo(timestamp, 0);
+            this.subject.Timestamp.Should().BeCloseTo(timestamp, precision: TimeSpan.Zero);
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             var value = new RscpInt8(RscpTag.BAT_DATA, 0x7F);
 
             this.subject.Add(value);
-            this.subject.Values.Should().BeEquivalentTo(value);
+            this.subject.Values.Should().BeEquivalentTo(new[] { value });
 
             var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
 
@@ -160,7 +160,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.Values[0].Should().BeEquivalentTo(value1);
             this.subject.Values[1].Should().BeEquivalentTo(value2);
 
-            this.subject.Values.Should().BeEquivalentTo(value1, value2);
+            this.subject.Values.Should().BeEquivalentTo(new[] { value1, value2 });
 
             var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x01, 0x00, 0x80, 0x00, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x00 };
 
@@ -193,7 +193,7 @@ namespace AM.E3dc.Rscp.Data.Tests
             this.subject.Add(value1);
             this.subject.Add(value2);
 
-            this.subject.Values.Should().BeEquivalentTo(value1, value2);
+            this.subject.Values.Should().BeEquivalentTo(new[] { value1, value2 });
 
             var expectedData = new byte[] { 0xE3, 0xDC, 0x00, 0x11, 0x3C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC8, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x7f, 0x00, 0x00, 0x84, 0x03, 0x02, 0x01, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00 };
 
