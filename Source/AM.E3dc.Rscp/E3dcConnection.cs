@@ -160,7 +160,7 @@ namespace AM.E3dc.Rscp
                     receivedData = memoryStream.ToArray();
                 }
 
-                this.logger?.LogDebug("Received {byteCount} bytes.");
+                this.logger?.LogDebug($"Received {receivedData.Length} bytes.");
 
                 var responseData = receivedData[..receivedDataLength];
 
