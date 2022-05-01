@@ -132,7 +132,7 @@ namespace AM.E3dc.Rscp.Tests
         }
 
         [Fact]
-        public void ConnectThrowsExceptionIfAlreadyConnected()
+        public async Task ConnectThrowsExceptionIfAlreadyConnected()
         {
             this.tcpClient.ConnectAsync(Arg.Is(E3dcAddress), Arg.Is(E3dcPort)).Returns(Task.CompletedTask);
 
@@ -144,14 +144,14 @@ namespace AM.E3dc.Rscp.Tests
 
 #pragma warning restore 4014
 
-            action.Should().Throw<InvalidOperationException>();
+            await action.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [Fact]
-        public void DisconnectThrowsExceptionIfNotConnected()
+        public async Task DisconnectThrowsExceptionIfNotConnected()
         {
             var action = new Func<Task>(async () => await this.subject.DisconnectAsync());
-            action.Should().Throw<InvalidOperationException>();
+            await action.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [Fact]
