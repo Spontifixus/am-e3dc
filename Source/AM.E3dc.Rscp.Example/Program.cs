@@ -39,11 +39,14 @@ namespace AM.E3dc.Rscp.Example
             await e3dcConnection.ConnectAsync(endpoint, rscpPassword);
 
             logger.LogInformation("Starting authorization for user '{userName}'...", e3dcUserName);
-            var authFrame = new RscpFrame();
-            var authContainer = new RscpContainer(RscpTag.RSCP_REQ_AUTHENTICATION);
-            authContainer.Add(new RscpString(RscpTag.RSCP_AUTHENTICATION_USER, e3dcUserName));
-            authContainer.Add(new RscpString(RscpTag.RSCP_AUTHENTICATION_PASSWORD, e3dcPassword));
-            authFrame.Add(authContainer);
+            var authFrame = new RscpFrame
+            {
+                new RscpContainer(RscpTag.RSCP_REQ_AUTHENTICATION)
+                {
+                    new RscpString(RscpTag.RSCP_AUTHENTICATION_USER, e3dcUserName),
+                    new RscpString(RscpTag.RSCP_AUTHENTICATION_PASSWORD, e3dcPassword)
+                }
+            };
 
             var response = await e3dcConnection.SendAsync(authFrame);
             if (response.Values[0] is RscpUInt8 userLevelValue)
