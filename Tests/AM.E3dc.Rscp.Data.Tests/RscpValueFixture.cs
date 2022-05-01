@@ -330,8 +330,10 @@ namespace AM.E3dc.Rscp.Data.Tests
             rscpContainer.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, value1.TotalLength);
 
             var value2 = new RscpUInt64(Tag, ulong.MaxValue);
-            var secondContainer = new RscpContainer(Tag);
-            secondContainer.Add(value2);
+            var secondContainer = new RscpContainer(Tag)
+            {
+                value2
+            };
             secondContainer.AssertHeader<RscpContainer>(Tag, RscpDataType.Container, value2.TotalLength);
 
             rscpContainer.Add(secondContainer);
@@ -370,8 +372,10 @@ namespace AM.E3dc.Rscp.Data.Tests
                 .Throw<InvalidOperationException>()
                 .WithMessage("The value cannot be added, because it would cause a circular reference.");
 
-            var secondContainer = new RscpContainer(Tag);
-            secondContainer.Add(rscpContainer);
+            var secondContainer = new RscpContainer(Tag)
+            {
+                rscpContainer
+            };
 
             var action2 = new Action(() =>
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +8,7 @@ namespace AM.E3dc.Rscp.Data.Values
     /// <summary>
     /// Value object used to transport messages with a <see cref="string"/> payload.
     /// </summary>
-    public sealed class RscpContainer : RscpValue
+    public sealed class RscpContainer : RscpValue, IEnumerable<RscpValue>
     {
         private readonly List<RscpValue> children = new List<RscpValue>();
 
@@ -67,6 +68,18 @@ namespace AM.E3dc.Rscp.Data.Values
 
             this.children.Add(value);
             this.Length += value.TotalLength;
+        }
+
+        /// <inheritdoc cref="IEnumerable.GetEnumerator" />
+        public IEnumerator<RscpValue> GetEnumerator()
+        {
+            return this.children.GetEnumerator();
+        }
+
+        /// <inheritdoc cref="IEnumerable.GetEnumerator" />
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.children.GetEnumerator();
         }
 
         private protected override void OnWrite(Span<byte> destination)

@@ -40,8 +40,10 @@ namespace AM.E3dc.Rscp.Tests
         public async Task CanSendSingleFrame()
         {
             var value = new RscpVoid(RscpTag.BAT_DATA);
-            var frame = new RscpFrame();
-            frame.Add(value);
+            var frame = new RscpFrame
+            {
+                value
+            };
             var frameBytes = frame.GetBytes();
 
             this.networkSteam.DataAvailable.Returns(true, false);
@@ -83,8 +85,10 @@ namespace AM.E3dc.Rscp.Tests
         public async Task CanSendMultipleFramesInRapidSequence()
         {
             var value = new RscpVoid(RscpTag.BAT_DATA);
-            var frame = new RscpFrame();
-            frame.Add(value);
+            var frame = new RscpFrame
+            {
+                value
+            };
             var frameBytes = frame.GetBytes();
 
             this.networkSteam.DataAvailable.Returns(true, false, true, false, true, false);
@@ -158,8 +162,10 @@ namespace AM.E3dc.Rscp.Tests
         public async Task EnqueuedFramesAreSentBeforeDisconnection()
         {
             var value = new RscpVoid(RscpTag.BAT_DATA);
-            var frame = new RscpFrame();
-            frame.Add(value);
+            var frame = new RscpFrame
+            {
+                value
+            };
             var frameBytes = frame.GetBytes();
 
             this.networkSteam.DataAvailable.Returns(true, false, true, false, true, false);

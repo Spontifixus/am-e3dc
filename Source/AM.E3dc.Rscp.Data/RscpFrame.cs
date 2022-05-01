@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
@@ -10,7 +11,7 @@ namespace AM.E3dc.Rscp.Data
     /// <summary>
     /// This class represents an RSCP control frame that can be used to communicate with an E3DC power station.
     /// </summary>
-    public sealed class RscpFrame
+    public sealed class RscpFrame : IEnumerable<RscpValue>
     {
         private const ushort HeaderLength = 18;
         private const ushort ChecksumLength = 4;
@@ -204,6 +205,18 @@ namespace AM.E3dc.Rscp.Data
             }
 
             return rawDataBytes;
+        }
+
+        /// <inheritdoc cref="IEnumerable.GetEnumerator" />
+        public IEnumerator<RscpValue> GetEnumerator()
+        {
+            return this.values.GetEnumerator();
+        }
+
+        /// <inheritdoc cref="IEnumerable.GetEnumerator" />
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.Values.GetEnumerator();
         }
     }
 }
