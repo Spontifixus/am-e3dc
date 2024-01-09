@@ -18,10 +18,10 @@ variables:
   
 steps:
 - task: UseDotNet@2
-  displayName: 'Use .NET6 sdk'
+  displayName: 'Use .NET8 sdk'
   inputs:
     packageType: sdk
-    version: 6.x
+    version: 8.x
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - task: DotNetCoreCLI@2
