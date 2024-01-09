@@ -94,10 +94,10 @@ To add a value to a frame use the `Add` method of the `RscpFrame` class. Contain
 To access a value from the power station's response you can either address the values by both their tag and their type:
 
 ```csharp
-var result = responseFrame.GetValue<RscpInt32>(RscpTag.BAT_CHARGE_CYCLES);
+var result = responseFrame.Get<RscpInt32>(RscpTag.BAT_CHARGE_CYCLES);
 ```
 
-This will yield a list of values fitting the given criteria.
+This will yield the first value fitting the given criteria or null if none was found. It will recursively search for a fitting value in an `RscpFrame` or an `RscpContainer`. 
 
 > **Note:** Sometimes the RSCP protocol acts weird. While the response to a successful authorization attempt is an `RscpUInt8` value, it returns an `RscpUInt32` if the authorization failed...
 

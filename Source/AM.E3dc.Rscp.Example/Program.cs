@@ -59,6 +59,20 @@ namespace AM.E3dc.Rscp.Example
                 logger.LogWarning("Authorization of '{userName}' failed.", e3dcUserName);
             }
 
+            logger.LogInformation("Loading battery charge cycles...");
+            var requestFrame = new RscpFrame
+            {
+                new RscpContainer(RscpTag.BAT_REQ_DATA)
+                {
+                    new RscpInt32(RscpTag.BAT_INDEX, 0),
+                    new RscpVoid(RscpTag.BAT_REQ_CHARGE_CYCLES)
+                }
+            };
+            var responseFrame = await e3dcConnection.SendAsync(requestFrame);
+
+            var chargeCycles = responseFrame.Get<RscpUInt32>(RscpTag.BAT_CHARGE_CYCLES).Value;
+            logger.LogInformation($"Battery has undergone {chargeCycles} charge cycles.");
+
             Console.ReadLine();
         }
     }
