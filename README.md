@@ -8,8 +8,6 @@ It targets .NET Standard 2.1 and can thus be used by all current .NET versions.
 
 ## Installation
 
-> **Note:** I should have started the versioning of this Library with a major version of 0, instead I went with 1. So until 1.1 please expect a few breaking changes as the API might change until then. Sorry for the confusion!
-
 You can add the library to your project's references using either the nuget package manager of visual studio or run the following command:
 
     dotnet add package AM.E3dc.Rscp
