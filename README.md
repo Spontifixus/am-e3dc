@@ -83,6 +83,12 @@ var stringValue = new RscpString(RscpTags.TAG_RSCP_SET_ENCRYPTION_PASSPHRASE, "H
 var intValue = new RscpInt32(RscpTags.TAG_EMS_REQ_BAT_SOC, 42);
 ```
 
+If you need an RscpTag that is not present in the enumeration you can simply specify it directly and cast it to the correct type:
+
+```csharp
+var anotherValue = new RscpInt32((RscpTag)0x03040001, 0), // same as RscpTag.BAT_INDEX
+```
+
 E3DC provides value containers that can bundle multiple values. You can see an example for use of an `RscpContainer` class in the example code in the last chapter.
 
 To add a value to a frame use the `Add` method of the `RscpFrame` class. Containers and frames can both handle multiple values.
